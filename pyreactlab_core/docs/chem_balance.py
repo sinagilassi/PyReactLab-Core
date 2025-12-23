@@ -1,18 +1,24 @@
 # chem_balance.py
 from __future__ import annotations
 
+import logging
 import math
 import re
 from dataclasses import dataclass
 from fractions import Fraction
 from typing import Dict, List, Tuple, Iterable, Optional
-
 import numpy as np
+# local
+from ..models.reaction import Reaction
 
+# NOTE: setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ---------------------------
 # Integer helpers
 # ---------------------------
+
 
 def _gcd(a: int, b: int) -> int:
     return math.gcd(abs(a), abs(b))
@@ -113,18 +119,43 @@ def _smart_split_plus(side: str) -> List[str]:
     return out
 
 
-def _split_equation(eq: str) -> Tuple[List[str], List[str]]:
+def _split_equation_v0(eq: str) -> Tuple[List[str], List[str]]:
     s = eq.strip()
     if "->" in s:
         left, right = s.split("->", 1)
     elif "=" in s:
         left, right = s.split("=", 1)
-    elif "=>" in s:
-        left, right = s.split("=>", 1)
-    elif "<=>" in s:
-        left, right = s.split("<=>", 1)
     else:
         raise ValueError("Equation must contain '->', '=', '=>', '<=>'.")
+
+    left_parts = _smart_split_plus(left)
+    right_parts = _smart_split_plus(right)
+
+    if not left_parts or not right_parts:
+        raise ValueError("Invalid equation: empty side.")
+    return left_parts, right_parts
+
+
+ARROW_RE = re.compile(r"\s*(<=>|=>|->|=)\s*")
+
+
+def _split_equation(reaction: str) -> Tuple[List[str], List[str]]:
+    """
+    Returns (lhs, rhs). Raises if no operator or ambiguous.
+    """
+    m = ARROW_RE.search(reaction)
+    if not m:
+        raise ValueError(
+            "No reaction operator found. Expected one of: <=>, =>, ->, =")
+
+    op = m.group(1)
+    left = reaction[:m.start()]
+    right = reaction[m.end():]
+
+    # Ensure there's exactly ONE operator occurrence (not counting states etc.)
+    # If you allow multiple steps in one line, remove this check.
+    if ARROW_RE.search(right):
+        raise ValueError("More than one reaction operator found (ambiguous).")
 
     left_parts = _smart_split_plus(left)
     right_parts = _smart_split_plus(right)
@@ -602,17 +633,87 @@ def balance_half_reaction(equation: str, medium: str = "auto") -> str:
 
     return _format_equation(lhs, rhs)
 
+# ---------------------------
+# check reaction format
+# ---------------------------
+
 
 # ---------------------------
 # Unified API
 # ---------------------------
 
-def balance(equation: str, method: str = "algebraic", medium: str = "auto") -> str:
-    m = method.lower().strip()
-    if m in ("algebraic", "matrix"):
-        return balance_algebraic(equation, include_charge="auto")
-    if m in ("half", "half-reaction", "ion", "ion-electron"):
-        return balance_half_reaction(equation, medium=medium)
-    if m in ("oxidation", "oxidation-number", "ox"):
-        return balance_oxidation_number(equation)
-    raise ValueError("method must be: algebraic | half | oxidation")
+def balance(
+        equation: str | Reaction,
+        method: str = "algebraic",
+        medium: str = "auto"
+) -> Optional[str]:
+    """
+    Balance a chemical equation using the specified method.
+
+    Parameters
+    ----------
+    equation : str
+        The unbalanced chemical equation as a string.
+    method : str, optional
+        The balancing method to use. Options are:
+        - "algebraic": Uses algebraic matrix method.
+        - "half": Uses half-reaction method (redox/ionic friendly).
+        - "oxidation": Uses oxidation-number method.
+        Default is "algebraic".
+    medium : str, optional
+        The medium for half-reaction method. Options are:
+        - "auto": Automatically detect medium.
+        - "acid": Acidic medium.
+        - "base": Basic medium.
+        Default is "auto".
+
+    Returns
+    -------
+    str
+        The balanced chemical equation as a string.
+    """
+    try:
+        # SECTION: Input handling
+        # equation: str | Reaction
+        if not isinstance(equation, (str, Reaction)):
+            logger.error("equation must be a string or Reaction object.")
+            return None
+
+        # normalize method
+        m = method.lower().strip()
+        # >> check
+        if m not in ("algebraic", "half", "oxidation"):
+            logger.error(
+                "Invalid method specified, method must be: algebraic | half | oxidation")
+            return None
+
+        # medium check
+        medium = medium.lower().strip()
+        # >> check
+        if medium not in ("auto", "acid", "base"):
+            logger.error(
+                "Invalid medium specified, medium must be: auto | acid | base")
+            return None
+
+        # SECTION: Reaction object extraction
+        if isinstance(equation, Reaction):
+            equation = equation.symbolic_unbalanced_reaction
+
+        # NOTE: empty check
+        if not equation or not equation.strip():
+            raise ValueError("Equation string is empty.")
+
+        # SECTION: Equation string extraction
+        if m in ("algebraic", "matrix"):
+            return balance_algebraic(equation, include_charge="auto")
+        if m in ("half", "half-reaction", "ion", "ion-electron"):
+            return balance_half_reaction(equation, medium=medium)
+        if m in ("oxidation", "oxidation-number", "ox"):
+            return balance_oxidation_number(equation)
+
+        logger.error(
+            "Invalid method specified,method must be: algebraic | half | oxidation")
+        return None
+    except Exception as e:
+        logging.error(f"Error in balancing equation '{equation}': {e}")
+        return None
