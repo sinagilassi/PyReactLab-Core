@@ -48,6 +48,16 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
+    def symbolic_reaction(self) -> str:
+        return self.analysis.get("symbolic_reaction", "")
+
+    @computed_field
+    @property
+    def symbolic_unbalanced_reaction(self) -> str:
+        return self.analysis.get("symbolic_unbalanced_reaction", "")
+
+    @computed_field
+    @property
     def reactants_names(self) -> list[str]:
         return self.analysis.get("reactants_names", [])
 
