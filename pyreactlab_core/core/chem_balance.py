@@ -119,8 +119,12 @@ def _split_equation(eq: str) -> Tuple[List[str], List[str]]:
         left, right = s.split("->", 1)
     elif "=" in s:
         left, right = s.split("=", 1)
+    elif "=>" in s:
+        left, right = s.split("=>", 1)
+    elif "<=>" in s:
+        left, right = s.split("<=>", 1)
     else:
-        raise ValueError("Equation must contain '->' or '='.")
+        raise ValueError("Equation must contain '->', '=', '=>', '<=>'.")
 
     left_parts = _smart_split_plus(left)
     right_parts = _smart_split_plus(right)
