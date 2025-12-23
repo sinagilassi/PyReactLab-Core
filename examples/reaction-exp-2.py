@@ -1,5 +1,5 @@
 # import libs
-from pyreactlab_core.core import balance
+from pyreactlab_core.docs import balance
 from rich import print
 
 tests = [
