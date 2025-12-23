@@ -149,7 +149,9 @@ class ChemReact:
             # Define a regex pattern to match reactants/products
             # pattern = r'(\d*)?(\w+)\((\w)\)'
             # pattern = r'(\d*\.?\d+)?(\w+)\((\w)\)'
-            pattern = r'(?:(\d*\.?\d+)\s*)?([A-Z][a-zA-Z0-9]*)\s*(?:\((\w)\))?'
+            # pattern = r'(?:(\d*\.?\d+)\s*)?([A-Z][a-zA-Z0-9]*)\s*(?:\((\w)\))?'
+            # NOTE: multi-purpose pattern
+            pattern = r'(?:(\d*\.?\d+)\s*)?(e(?:\{-?1?\}|[+-])?|\[[^\]\s]+\](?:\d+)?(?:\{[^{}\s]+\})?|(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*)(?:[·*](?:\d+)?(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*))*(?:\{[^{}\s]+\})?)\s*(?:\((g|l|s|aq)\))?'
 
             # Extract reactants
             reactants = re.findall(pattern, sides[0])
@@ -266,10 +268,52 @@ class ChemReact:
                 reaction_state
             )
 
+            # SECTION: Symbolic reaction without states
+            symbolic_reaction = ""
+            symbolic_unbalanced_reaction = ""
+            # reactants
+            for i, r in enumerate(reactants):
+                if i == 0:
+                    if r['coefficient'] == 1:
+                        symbolic_reaction += f"{r['molecule']}"
+                    else:
+                        symbolic_reaction += f"{r['coefficient']}{r['molecule']}"
+                    # unbalanced
+                    symbolic_unbalanced_reaction += f"{r['molecule']}"
+                else:
+                    if r['coefficient'] == 1:
+                        symbolic_reaction += f" + {r['molecule']}"
+                    else:
+                        symbolic_reaction += f" + {r['coefficient']}{r['molecule']}"
+                    # unbalanced
+                    symbolic_unbalanced_reaction += f" + {r['molecule']}"
+            # reaction mode symbol
+            symbolic_reaction += f" {self.reaction_mode_symbol} "
+            symbolic_unbalanced_reaction += f" {self.reaction_mode_symbol} "
+
+            # products
+            for i, p in enumerate(products):
+                if i == 0:
+                    if p['coefficient'] == 1:
+                        symbolic_reaction += f"{p['molecule']}"
+                    else:
+                        symbolic_reaction += f"{p['coefficient']}{p['molecule']}"
+                    # unbalanced
+                    symbolic_unbalanced_reaction += f"{p['molecule']}"
+                else:
+                    if p['coefficient'] == 1:
+                        symbolic_reaction += f" + {p['molecule']}"
+                    else:
+                        symbolic_reaction += f" + {p['coefficient']}{p['molecule']}"
+                    # unbalanced
+                    symbolic_unbalanced_reaction += f" + {p['molecule']}"
+
             # res
             res = {
                 'name': name,
                 'reaction': reaction,
+                "symbolic_reaction": symbolic_reaction,
+                "symbolic_unbalanced_reaction": symbolic_unbalanced_reaction,
                 'reactants': reactants,
                 'reactants_names': reactants_names,
                 'products': products,
