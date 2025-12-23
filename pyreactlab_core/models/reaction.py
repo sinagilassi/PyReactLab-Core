@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field, computed_field, model_validator
 # local imports
-from ..utils.chem_react import (
+from ..core.chem_react import (
     ChemReact,
     ReactionMode,
     PhaseRule
