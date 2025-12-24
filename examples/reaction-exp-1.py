@@ -11,6 +11,10 @@ reaction_1 = Reaction(
 print(
     f"[bold underline]Reaction Analysis for: {reaction_1.name}[/bold underline]")
 print(f"Reaction: {reaction_1.reaction}")
+print(f"Component IDs: {reaction_1.component_ids}")
+print(f"Reaction Mode Symbol: {reaction_1.reaction_mode_symbol}")
+print(
+    f"Symbolic Unbalanced Reaction: {reaction_1.symbolic_unbalanced_reaction}")
 print(f"Symbolic Reaction: {reaction_1.symbolic_reaction}")
 print(f"Reactants: {reaction_1.reactants}")
 print(f"Products: {reaction_1.products}")
