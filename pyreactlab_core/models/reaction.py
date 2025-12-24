@@ -1,7 +1,7 @@
 # import libs
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, computed_field, model_validator
 # local imports
 from ..core.chem_react import (
@@ -68,12 +68,12 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def products(self) -> list[str]:
+    def products(self) -> List[Dict[str, Any]]:
         return self.analysis.get("products", [])
 
     @computed_field
     @property
-    def reactants(self) -> list[str]:
+    def reactants(self) -> List[Dict[str, Any]]:
         return self.analysis.get("reactants", [])
 
     @computed_field
@@ -85,6 +85,11 @@ class Reaction(BaseModel):
     @property
     def reaction_stoichiometry(self) -> Dict[str, float]:
         return self.analysis.get("reaction_stoichiometry", {})
+
+    @computed_field
+    @property
+    def reaction_stoichiometry_matrix(self) -> list[float]:
+        return self.analysis.get("reaction_stoichiometry_matrix", [])
 
     @computed_field
     @property
@@ -105,3 +110,13 @@ class Reaction(BaseModel):
     @property
     def state_count(self) -> Dict[str, int]:
         return self.analysis.get("state_count", {})
+
+    @computed_field
+    @property
+    def component_ids(self) -> Dict[str, int]:
+        return self.analysis.get("component_ids", {})
+
+    @computed_field
+    @property
+    def all_components(self) -> list[str]:
+        return self.analysis.get("all_components", [])
