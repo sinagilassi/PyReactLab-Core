@@ -153,6 +153,7 @@ class ChemReact:
             # NOTE: multi-purpose pattern
             pattern = r'(?:(\d*\.?\d+)\s*)?(e(?:\{-?1?\}|[+-])?|\[[^\]\s]+\](?:\d+)?(?:\{[^{}\s]+\})?|(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*)(?:[·*](?:\d+)?(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*))*(?:\{[^{}\s]+\})?)\s*(?:\((g|l|s|aq)\))?'
 
+            # SECTION: SECTION: Extract reactants and products
             # Extract reactants
             reactants = re.findall(pattern, sides[0])
             reactants = [
@@ -219,21 +220,38 @@ class ChemReact:
                 # update source
                 products[i]['molecule_state'] = full_name
 
+            # SECTION: all components
+            all_components = reactants_names + products_names
+            # >> remove duplicates
+            all_components: List[str] = list(set(all_components))
+
             # SECTION: reaction coefficient and stoichiometry
             reaction_coefficients = 0
             reaction_stoichiometry = {}
+            reaction_stoichiometry_matrix = []
 
             # iterate over reactants and products to calculate reaction coefficients
+            # NOTE: reactants
             for item in reactants:
                 reaction_coefficients += item['coefficient']
                 reaction_stoichiometry[
                     item['molecule_state']
                 ] = -1 * item['coefficient']
+                # append to stoichiometric matrix
+                reaction_stoichiometry_matrix.append(
+                    -1 * item['coefficient']
+                )
+
+            # NOTE: products
             for item in products:
                 reaction_coefficients -= item['coefficient']
                 reaction_stoichiometry[
                     item['molecule_state']
                 ] = item['coefficient']
+                # append to stoichiometric matrix
+                reaction_stoichiometry_matrix.append(
+                    item['coefficient']
+                )
 
             # SECTION: Carbon count for each component
             carbon_count = {}
@@ -271,6 +289,7 @@ class ChemReact:
             # SECTION: Symbolic reaction without states
             symbolic_reaction = ""
             symbolic_unbalanced_reaction = ""
+
             # reactants
             for i, r in enumerate(reactants):
                 if i == 0:
@@ -308,10 +327,21 @@ class ChemReact:
                     # unbalanced
                     symbolic_unbalanced_reaction += f" + {p['molecule']}"
 
+            # SECTION: set id for each component
+            # NOTE: component ids
+            component_ids = {}
+            for i, r in enumerate(reactants):
+                component_ids[r['molecule_state']] = i+1
+            offset = len(reactants)
+            for i, p in enumerate(products):
+                component_ids[p['molecule_state']] = offset + i + 1
+
             # res
             res = {
                 'name': name,
                 'reaction': reaction,
+                "component_ids": component_ids,
+                "all_components": all_components,
                 "symbolic_reaction": symbolic_reaction,
                 "symbolic_unbalanced_reaction": symbolic_unbalanced_reaction,
                 'reactants': reactants,
@@ -320,6 +350,7 @@ class ChemReact:
                 'products_names': products_names,
                 'reaction_coefficients': reaction_coefficients,
                 'reaction_stoichiometry': reaction_stoichiometry,
+                'reaction_stoichiometry_matrix': reaction_stoichiometry_matrix,
                 'carbon_count': carbon_count,
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
@@ -559,7 +590,8 @@ class ChemReact:
         except Exception as e:
             raise Exception(f"Error defining component ID: {e}")
 
-    def define_component_id_v2(self, reaction_res):
+    @staticmethod
+    def define_component_id_v2(reaction_res):
         '''
         Define component ID (version 2)
 
