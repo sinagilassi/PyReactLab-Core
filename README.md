@@ -1,4 +1,4 @@
-# PyReactLab-Core
+# 🧪 PyReactLab-Core
 
 [![PyPI Downloads](https://static.pepy.tech/badge/pyreactlab-core/month)](https://pepy.tech/projects/pyreactlab-core)
 ![PyPI](https://img.shields.io/pypi/v/pyreactlab-core)
@@ -7,14 +7,14 @@
 
 **PyReactLab-Core** is the core foundation of the PyReactLab ecosystem, offering shared data structures and algorithms for chemical reaction representation, stoichiometry, and reaction analysis.
 
-## Features
+## ✨ Features
 
-- **Reaction Representation**: Define and manipulate chemical reactions with ease.
-- **Stoichiometry Calculations**: Perform stoichiometric calculations for reactions.
-- **Reaction Analysis**: Analyze reaction properties and behaviors.
-- **Extensible Design**: Built to be extended by other PyReactLab modules.
+- **⚗️ Reaction Representation**: Define and manipulate chemical reactions with ease.
+- **⚖️ Stoichiometry Calculations**: Perform stoichiometric calculations for reactions.
+- **🔬 Reaction Analysis**: Analyze reaction properties and behaviors.
+- **🧩 Extensible Design**: Built to be extended by other PyReactLab modules.
 
-## Installation
+## 📦 Installation
 
 You can install PyReactLab-Core via pip:
 
