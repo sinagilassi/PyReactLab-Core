@@ -8,6 +8,8 @@ from .configs.info import (
     __license__,
 )
 
+from .app import rxn, rxn_stoichiometry, rxns_stoichiometry
+
 __all__ = [
     # config
     "__version__",
@@ -17,4 +19,7 @@ __all__ = [
     "__email__",
     "__license__",
     # app
+    "rxn",
+    "rxn_stoichiometry",
+    "rxns_stoichiometry",
 ]
