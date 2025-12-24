@@ -4,6 +4,7 @@
 ![PyPI](https://img.shields.io/pypi/v/pyreactlab-core)
 ![Python Version](https://img.shields.io/pypi/pyversions/pyreactlab-core.svg)
 ![License](https://img.shields.io/pypi/l/pyreactlab-core)
+![Read the Docs](https://img.shields.io/readthedocs/pyreactlab-core)
 
 **PyReactLab-Core** is the core foundation of the PyReactLab ecosystem, offering shared data structures and algorithms for chemical reaction representation, stoichiometry, and reaction analysis.
 
