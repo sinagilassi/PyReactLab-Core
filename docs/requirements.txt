@@ -1,0 +1,19 @@
+# Requirements for core
+jinja2
+markdown
+mkdocs
+mkdocs-autorefs
+mkdocs-get-deps
+mkdocs-material
+mkdocs-material-extensions
+mkdocstrings
+mkdocstrings-python
+pygments
+pymdown-extensions
+
+# Requirements for plugins
+babel
+colorama
+paginate
+regex
+requests
