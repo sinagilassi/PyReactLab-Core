@@ -12,6 +12,58 @@ from ..core.chem_react import (
 
 
 class Reaction(BaseModel):
+    """
+    A class representing a chemical reaction, including its analysis and properties.
+
+    Attributes
+    ----------
+    name : str
+        The name of the reaction.
+    reaction : str
+        The chemical reaction equation as a string.
+    reaction_mode_symbol : Optional[ReactionMode]
+        The symbol used to separate reactants and products in a reaction equation.
+    analysis : Dict[str, Any]
+        A dictionary containing the analysis results of the reaction.
+
+    Properties
+    ----------
+    symbolic_reaction : str
+        The symbolic representation of the balanced reaction.
+    symbolic_unbalanced_reaction : str
+        The symbolic representation of the unbalanced reaction.
+    reactants_names : list[str]
+        A list of names of the reactants in the reaction.
+    products_names : list[str]
+        A list of names of the products in the reaction.
+    products : List[Dict[str, Any]]
+        A list of dictionaries representing the products of the reaction.
+    reactants : List[Dict[str, Any]]
+        A list of dictionaries representing the reactants of the reaction.
+    reaction_coefficients : Dict[str, float]
+        A dictionary of reaction coefficients for each component.
+    reaction_stoichiometry : Dict[str, float]
+        A dictionary representing the stoichiometry of the reaction.
+    reaction_stoichiometry_matrix : list[float]
+        A list representing the stoichiometry matrix of the reaction.
+    carbon_count : int
+        The total number of carbon atoms in the reaction.
+    reaction_state : str
+        The state of the reaction (e.g., "balanced", "unbalanced").
+    reaction_phase : Optional[PhaseRule]
+        The phase rule of the reaction, if applicable.
+    state_count : Dict[str, int]
+        A dictionary counting the states of components in the reaction.
+    component_ids : Dict[str, int]
+        A dictionary mapping component names to their IDs.
+    all_components : list[str]
+        A list of all component names involved in the reaction.
+
+    Methods
+    -------
+    _run_existing_analysis(self) -> Reaction
+        Validates and analyzes the reaction after initialization.
+    """
     name: str
     reaction: str
     reaction_mode_symbol: Optional[ReactionMode] = Field(
