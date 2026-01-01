@@ -30,7 +30,7 @@ pip install pyreactlab-core
 A typical reaction can be introduced as follows:
 
 ```python
-from pyreactlab_core import Reaction
+from pyreactlab_core.models.reaction import Reaction
 
 reaction = Reaction(
     name="Combustion of Methane",
@@ -75,7 +75,7 @@ print(f"Products Names: {reaction_1.products_names}")
 You can check if a reaction is balanced:
 
 ```python
-from pyreactlab_core import Reaction
+from pyreactlab_core.models.reaction import Reaction
 from pyreactlab_core.core import balance
 
 # define a reaction
@@ -94,7 +94,7 @@ print(f"Balanced Reaction: {balanced_reaction.reaction}")
 You can create a stoichiometric matrix for a list of reactions:
 
 ```python
-from pyreactlab_core import Reaction
+from pyreactlab_core.models.reaction import Reaction
 from pyreactlab_core import rxn, rxn_stoichiometry, rxns_stoichiometry
 
 # NOTE: define reaction string
