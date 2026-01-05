@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, computed_field, model_validator
+from pythermodb_settings.models import Component
 # local imports
 from ..core.chem_react import (
     ChemReact,
@@ -66,11 +67,18 @@ class Reaction(BaseModel):
     """
     name: str
     reaction: str
+    components: Optional[List[Component]] = Field(
+        default=None,
+        description="A list of Component objects involved in the reaction."
+    )
     reaction_mode_symbol: Optional[ReactionMode] = Field(
         default=None,
         description="The symbol used to separate reactants and products in a reaction equation."
     )
-    analysis: Dict[str, Any] = Field(default_factory=dict)
+    analysis: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="A dictionary containing the analysis results of the reaction."
+    )
 
     @model_validator(mode="after")
     def _run_existing_analysis(self):
@@ -87,7 +95,10 @@ class Reaction(BaseModel):
             )
 
         # NOTE: analyze reaction
-        util = ChemReact(reaction_mode_symbol=self.reaction_mode_symbol)
+        util = ChemReact(
+            reaction_mode_symbol=self.reaction_mode_symbol,
+            components=self.components
+        )
 
         # NOTE: perform analysis
         self.analysis = util.analyze_reaction(
@@ -172,3 +183,13 @@ class Reaction(BaseModel):
     @property
     def all_components(self) -> list[str]:
         return self.analysis.get("all_components", [])
+
+    @computed_field
+    @property
+    def available_components(self) -> List[Component]:
+        return self.analysis.get("components", [])
+
+    @computed_field
+    @property
+    def component_checker(self) -> bool:
+        return self.analysis.get("component_checker", False)
