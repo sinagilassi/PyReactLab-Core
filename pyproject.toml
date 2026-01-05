@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyreactlab-core"
-version = "0.1.1"
+version = "0.1.2"
 description = "pyreactlab-core is the core foundation of the PyReactLab ecosystem, offering shared data structures and algorithms for chemical reaction representation, stoichiometry, and reaction analysis."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,7 +34,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
     "rich>=14.2.0",
-    "pythermodb-settings>=0.1.11",
+    "pythermodb-settings",
 ]
 
 [project.urls]
