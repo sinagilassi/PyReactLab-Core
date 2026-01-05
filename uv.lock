@@ -248,12 +248,13 @@ wheels = [
 
 [[package]]
 name = "pyreactlab-core"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pythermodb-settings" },
     { name = "rich" },
     { name = "scipy" },
 ]
@@ -263,8 +264,22 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.4.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
+    { name = "pythermodb-settings", specifier = ">=0.1.11" },
     { name = "rich", specifier = ">=14.2.0" },
     { name = "scipy", specifier = ">=1.16.3" },
+]
+
+[[package]]
+name = "pythermodb-settings"
+version = "0.1.11"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/bb/f3bef27569c4a7e82c22e374fc73b752f795937efab43943254d31cb9bcc/pythermodb_settings-0.1.11.tar.gz", hash = "sha256:146058542006ce5e79b4ee5b79d8a440aabd0702c34e65972abddaae3d1f73d5", size = 10634, upload-time = "2025-12-19T20:49:20.839Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/19/d26f779817281e9391973819d045a24714ef02d02c6086fa96b93009823d/pythermodb_settings-0.1.11-py3-none-any.whl", hash = "sha256:7eb7331734c181e3d2c265b18c65bb7b3e8c9b7614f9d328d01739feff0e4614", size = 12225, upload-time = "2025-12-19T20:49:19.794Z" },
 ]
 
 [[package]]
