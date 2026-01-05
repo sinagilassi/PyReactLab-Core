@@ -1,7 +1,8 @@
 # import libs
 import logging
 import re
-from typing import Dict, Any, List, Optional, Literal
+from typing import Dict, Any, List, Optional, Literal, TypedDict
+from pythermodb_settings.models import Component
 from ..configs.constants import (
     R_CONST_J__molK,
     PRESSURE_REF_Pa,
@@ -17,7 +18,25 @@ ReactionMode = Literal["<=>", "=>", "="]
 # NOTE: Phase Rule
 PhaseRule = Literal["gas", "liquid", "aqueous", "solid"]
 
+# SECTION: Models
+# NOTE: reactants
 
+
+class Reactant(TypedDict):
+    coefficient: float
+    molecule: str
+    state: str
+    molecule_state: str
+
+
+class Product(TypedDict):
+    coefficient: float
+    molecule: str
+    state: str
+    molecule_state: str
+
+
+# SECTION: ChemReact class
 class ChemReact:
     """
     Chemical Reaction Utilities
@@ -41,9 +60,17 @@ class ChemReact:
     # available phases
     available_phases = PhaseRule.__args__
 
+    # NOTE: id separator
+    # ! used to separate component name and state
+    _id_separator: str = '-'
+
+    # NOTE: component checker
+    _component_checker: bool = False
+
     def __init__(
         self,
-        reaction_mode_symbol: ReactionMode
+        reaction_mode_symbol: ReactionMode,
+        components: Optional[List[Component]]
     ):
         """
         Initialize the ChemReactUtils class.
@@ -52,6 +79,8 @@ class ChemReact:
         ----------
         reaction_mode_symbol : ReactionMode, optional
             The symbol used to separate reactants and products in a reaction equation.
+        components : Optional[List[Component]]
+            A list of Component objects involved in the reaction.
 
         Notes
         -----
@@ -59,7 +88,20 @@ class ChemReact:
         - Use "=" when thermodynamics dominates
         - Use "=>" when kinetics only matter
         """
+        # NOTE: set reaction mode symbol
         self.reaction_mode_symbol = reaction_mode_symbol
+
+        # NOTE: set components
+        self.components = components
+
+        # SECTION: Component id
+        # NOTE: component ids
+        if components is None:
+            self.component_ids = []
+        else:
+            self.component_ids = [
+                f"{comp.formula}{self._id_separator}{comp.state}" for comp in components
+            ]
 
     @property
     def system_inputs(self) -> Dict[str, Any]:
@@ -155,13 +197,14 @@ class ChemReact:
 
             # SECTION: SECTION: Extract reactants and products
             # Extract reactants
-            reactants = re.findall(pattern, sides[0])
-            reactants = [
+            reactants_raw = re.findall(pattern, sides[0])
+            reactants: List[Reactant] = [
                 {
                     'coefficient': float(r[0]) if r[0] else float(1),
                     'molecule': r[1],
-                    'state': r[2] if r[2] else phase_set
-                } for r in reactants
+                    'state': r[2] if r[2] else phase_set,
+                    'molecule_state': ''
+                } for r in reactants_raw
             ]
 
             # NOTE: reactants full name
@@ -188,13 +231,14 @@ class ChemReact:
                 reactants[i]['molecule_state'] = full_name
 
             # Extract products
-            products = re.findall(pattern, sides[1])
-            products = [
+            products_raw = re.findall(pattern, sides[1])
+            products: List[Product] = [
                 {
                     'coefficient': float(p[0]) if p[0] else float(1),
                     'molecule': p[1],
-                    'state': p[2] if p[2] else phase_set
-                } for p in products
+                    'state': p[2] if p[2] else phase_set,
+                    'molecule_state': ''
+                } for p in products_raw
             ]
 
             # NOTE: products full name
@@ -336,6 +380,12 @@ class ChemReact:
             for i, p in enumerate(products):
                 component_ids[p['molecule_state']] = offset + i + 1
 
+            # SECTION: collect components
+            components = self.collect_components(
+                reactants,
+                products
+            )
+
             # res
             res = {
                 'name': name,
@@ -355,6 +405,8 @@ class ChemReact:
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
                 'state_count': state_count,
+                'components': components,
+                'component_checker': self._component_checker,
             }
 
             return res
@@ -837,3 +889,68 @@ class ChemReact:
             return phase_dict
         except Exception as e:
             raise Exception(f"Error analyzing reaction phase: {e}")
+
+    def collect_components(
+        self,
+        reactants: List[Reactant],
+        products: List[Product],
+    ) -> List[Component]:
+        '''
+        Collect components from reactants and products.
+
+        Parameters
+        ----------
+        reactants: list
+            List of reactants.
+        products: list
+            List of products.
+
+        Returns
+        -------
+        components: list
+            List of components.
+        '''
+        try:
+            # NOTE: initialize components list
+            components: List[Component] = []
+            components_ids_: List[str] = []
+
+            # SECTION: Check components
+            if self.components is None:
+                return components
+
+            # SECTION: Collect components from reactants/products
+            # NOTE: reaction participants
+            reaction_participants = reactants + products
+            reaction_participants_num = len(reaction_participants)
+
+            for item in reaction_participants:
+                # component id
+                component_id_ = item['molecule_state']
+
+                # check
+                if (
+                    component_id_ in self.component_ids and
+                    component_id_ not in components_ids_
+                ):
+                    # >> upd
+                    components_ids_.append(component_id_)
+
+                    # >> get index
+                    index = self.component_ids.index(component_id_)
+                    # get component
+                    component = self.components[index]
+                    # append to components list
+                    components.append(component)
+
+            # NOTE: component checker
+            if (
+                len(components) != reaction_participants_num
+            ):
+                self._component_checker = False
+            else:
+                self._component_checker = True
+
+            return components
+        except Exception as e:
+            raise Exception(f"Error collecting components: {e}")
