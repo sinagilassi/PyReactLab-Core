@@ -150,8 +150,8 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def reaction_state(self) -> str:
-        return self.analysis.get("reaction_state", "unknown")
+    def reaction_state(self) -> Dict[str, str]:
+        return self.analysis.get("reaction_state", {})
 
     @computed_field
     @property
