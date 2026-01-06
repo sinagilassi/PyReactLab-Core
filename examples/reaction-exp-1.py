@@ -35,8 +35,8 @@ components = [
     component_h2o
 ]
 
-components = []
-components = None
+# components = []
+# components = None
 
 # NOTE: define components
 reaction_1 = Reaction(
@@ -67,3 +67,4 @@ print(f"Products Names: {reaction_1.products_names}")
 print(f"All Components: {reaction_1.all_components}")
 print(f"Available components: {reaction_1.available_components}")
 print(f"Component Checker: {reaction_1.component_checker}")
+print(f"Mapped Components: {reaction_1.map_components}")
