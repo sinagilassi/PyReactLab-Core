@@ -193,3 +193,8 @@ class Reaction(BaseModel):
     @property
     def component_checker(self) -> bool:
         return self.analysis.get("component_checker", False)
+
+    @computed_field
+    @property
+    def map_components(self) -> Dict[str, Component]:
+        return self.analysis.get("map_components", {})
