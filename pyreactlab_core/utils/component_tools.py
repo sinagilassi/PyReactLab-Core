@@ -28,6 +28,8 @@ def map_component_ids(
         A dictionary mapping component IDs to their corresponding Component objects.
     """
     id_to_component = {}
+
+    # iterate over components and map ids
     for comp in component:
         comp_id = set_component_id(comp, component_key)
         if comp_id in component_ids:

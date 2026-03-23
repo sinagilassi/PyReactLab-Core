@@ -79,8 +79,7 @@ class ChemReact:
         self,
         reaction_mode_symbol: ReactionMode,
         components: Optional[List[Component]],
-        component_keys: List[ComponentKey] = [
-            "Name-Formula", "Formula-State", "Name-State"]
+        component_keys: Optional[List[ComponentKey]] = None
     ):
         """
         Initialize the ChemReactUtils class.
@@ -109,7 +108,10 @@ class ChemReact:
         self.components = components
 
         # NOTE: set component key
-        self.component_keys = component_keys
+        if component_keys is not None:
+            self.component_keys = component_keys
+        else:
+            self.component_keys = []
 
         # SECTION: Component id
         # NOTE: component ids
@@ -1075,7 +1077,8 @@ class ChemReact:
                 # create component id
                 comp_id_new = set_component_id(
                     comp,
-                    component_key)  # type: ignore
+                    component_key
+                )
                 id_to_component[comp_id_new] = reaction_stoichiometry[comp_id]
             else:
                 logging.warning(

@@ -83,7 +83,11 @@ class Reaction(BaseModel):
         description="A dictionary containing the analysis results of the reaction."
     )
     component_keys: List[ComponentKey] = Field(
-        default=["Name-Formula", "Formula-State", "Name-State"],
+        default_factory=lambda: [
+            "Formula-State",
+            "Name-State",
+            "Name-Formula",
+        ],
         description="The key used to identify components in the reaction analysis."
     )
 
@@ -149,8 +153,8 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def reaction_coefficients(self) -> Dict[str, float]:
-        return self.analysis.get("reaction_coefficients", {})
+    def reaction_coefficients(self) -> float:
+        return self.analysis.get("reaction_coefficients", 0.0)
 
     @computed_field
     @property
@@ -164,13 +168,13 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def reaction_stoichiometry_source(self) -> Dict[str, float]:
+    def reaction_stoichiometry_source(self) -> Dict[str, Dict[str, float]]:
         return self.analysis.get("reaction_stoichiometry_source", {})
 
     @computed_field
     @property
-    def carbon_count(self) -> int:
-        return self.analysis.get("carbon_count", 0)
+    def carbon_count(self) -> Dict[str, float]:
+        return self.analysis.get("carbon_count", {})
 
     @computed_field
     @property
@@ -179,7 +183,7 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def reaction_phase(self) -> Optional[PhaseRule]:
+    def reaction_phase(self) -> Optional[str]:
         return self.analysis.get("reaction_phase", None)
 
     @computed_field
