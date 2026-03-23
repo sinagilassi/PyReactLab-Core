@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict
 from pythermodb_settings.models import Component, ComponentKey
 from pythermodb_settings.utils import set_component_id
 # locals
@@ -140,48 +140,65 @@ def build_rxn_stoichiometry_source(
         reactions: List[Reaction],
         components: List[Component],
         component_key: ComponentKey
-):
-    # NOTE: stoichiometry source
-    stoichiometry_source = []
-
-#    iterate over reactions
-    for reaction in reactions:
-        # stoichiometry
-        stoichiometry_ = reaction.reaction_stoichiometry_source.get(
-            component_key, {})
-        # >> check
-        if not stoichiometry_:
-            logger.warning(
-                f"Stoichiometry source not found for reaction: {reaction.name}")
-            return None
-
-        # store
-        stoichiometry_source.append(stoichiometry_)
-
-    # NOTE: map component ids to components
-    components_source = [
-        set_component_id(
-            component=item,
-            component_key=component_key
-        ) for item in components
+) -> Optional[
+    Tuple[
+        List[Dict[str, float]],
+        List[List[float]]
     ]
+]:
+    try:
+        # NOTE: stoichiometry source
+        stoichiometry_source = []
 
-    # NOTE: stoichiometry
-    stoichiometry_result = []
+    #    iterate over reactions
+        for reaction in reactions:
+            # stoichiometry
+            stoichiometry_ = reaction.reaction_stoichiometry_source.get(
+                component_key, {})
+            # >> check
+            if not stoichiometry_:
+                logger.warning(
+                    f"Stoichiometry source not found for reaction: {reaction.name}")
+                return None
 
-    # iterate over stoichiometry source
-    for i in range(len(reactions)):
-        sto_ = {}
-        for item in components_source:
-            # raw data
-            sto_[item] = 0
+            # store
+            stoichiometry_source.append(stoichiometry_)
 
-        # update
-        stoichiometry_result.append(sto_)
+        # NOTE: map component ids to components
+        components_source = [
+            set_component_id(
+                component=item,
+                component_key=component_key
+            ) for item in components
+        ]
 
-    # update stoichiometry result
-    for i, item in enumerate(stoichiometry_result):
-        for key, value in stoichiometry_source[i].items():
-            item[key] = value
+        # NOTE: stoichiometry
+        stoichiometry_result: List[Dict[str, float]] = []
 
-    return stoichiometry_result
+        # iterate over stoichiometry source
+        for i in range(len(reactions)):
+            sto_ = {}
+            for item in components_source:
+                # raw data
+                sto_[item] = 0.0
+
+            # update
+            stoichiometry_result.append(sto_)
+
+        # update stoichiometry result
+        for i, item in enumerate(stoichiometry_result):
+            for key, value in stoichiometry_source[i].items():
+                item[key] = value
+
+        # NOTE: create a matrix of stoichiometry
+        stoichiometry_result_matrix: List[List[float]] = []
+        for item in stoichiometry_result:
+            row = []
+            for key in components_source:
+                row.append(float(item[key]))
+            stoichiometry_result_matrix.append(row)
+
+        return stoichiometry_result, stoichiometry_result_matrix
+    except Exception as e:
+        logger.error(f"Error building reaction stoichiometry source: {e}")
+        return None

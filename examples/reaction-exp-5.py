@@ -41,10 +41,17 @@ component_c2h6 = Component(
     state="g"
 )
 
+component_co = Component(
+    name="Carbon Monoxide",
+    formula="CO",
+    state="g"
+)
+
 components = [
     component_co2,
     component_h2,
     component_ch3oh,
+    component_co,
     component_h2o,
     component_c2h4,
     component_c2h6
@@ -60,10 +67,10 @@ reaction_2 = "C2H4(g) + H2(g) => C2H6(g)"
 name_2 = "Ethylene Hydrogenation to Ethane"
 components_2 = [component_c2h4, component_h2, component_c2h6]
 
-# NOTE: define components
+# NOTE: define reactions
 reaction_1 = Reaction(
     name=name_1,
-    reaction=reaction_1
+    reaction=reaction_1,
     components=components_1
 )
 
@@ -73,33 +80,35 @@ reaction_2 = Reaction(
     components=components_2
 )
 
-# NOTE: print analysis
+# SECTION: print analysis
+# Reaction 1
 print(
     f"[bold underline]Reaction Analysis for: {reaction_1.name}[/bold underline]")
 print(f"Reaction: {reaction_1.reaction}")
 print(f"Component IDs: {reaction_1.component_ids}")
-print(f"Reaction Mode Symbol: {reaction_1.reaction_mode_symbol}")
-print(
-    f"Symbolic Unbalanced Reaction: {reaction_1.symbolic_unbalanced_reaction}")
-print(f"Symbolic Reaction: {reaction_1.symbolic_reaction}")
-print(f"Reactants: {reaction_1.reactants}")
-print(f"Products: {reaction_1.products}")
 print(f"Reaction Coefficients: {reaction_1.reaction_coefficients}")
 print(f"Reaction Stoichiometry: {reaction_1.reaction_stoichiometry}")
 print(
     f"Reaction Stoichiometry Matrix: {reaction_1.reaction_stoichiometry_matrix}")
 print(
     f"Reaction Stoichiometry Source: {reaction_1.reaction_stoichiometry_source}")
-print(f"State Counts: {reaction_1.state_count}")
-print(f"Reaction Phase: {reaction_1.reaction_phase}")
-print(f"Reaction State: {reaction_1.reaction_state}")
-print(f"Carbon Count: {reaction_1.carbon_count}")
-print(f"Reactants Names: {reaction_1.reactants_names}")
-print(f"Products Names: {reaction_1.products_names}")
-print(f"All Components: {reaction_1.all_components}")
-print(f"Available components: {reaction_1.available_components}")
-print(f"Component Checker: {reaction_1.component_checker}")
-print(f"Mapped Components: {reaction_1.map_components}")
+
+# Reaction 2
+print(
+    f"\n[bold underline]Reaction Analysis for: {reaction_2.name}[/bold underline]")
+print(f"Reaction: {reaction_2.reaction}")
+print(f"Component IDs: {reaction_2.component_ids}")
+print(f"Reaction Coefficients: {reaction_2.reaction_coefficients}")
+print(f"Reaction Stoichiometry: {reaction_2.reaction_stoichiometry}")
+print(
+    f"Reaction Stoichiometry Matrix: {reaction_2.reaction_stoichiometry_matrix}")
+print(
+    f"Reaction Stoichiometry Source: {reaction_2.reaction_stoichiometry_source}")
+
+# Components
+print("\n[bold underline]Components List[/bold underline]")
+print(components)
+
 
 # SECTION: Get reaction stoichiometry matrix
 stoichiometry_result = build_rxns_stoichiometry(

@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 from pythermodb_settings.models import Component, ComponentKey
 # locals
 from .models.reaction import Reaction
@@ -137,7 +137,28 @@ def build_rxns_stoichiometry(
     reactions: List[Reaction],
     components: List[Component],
     component_key: ComponentKey
-):
+) -> Optional[
+    Dict[str, List[Dict[str, float]] | List[List[float]]]
+]:
+    """
+    Build the reaction stoichiometry matrices for a list of chemical reactions.
+
+    Parameters
+    ----------
+    reactions : List[Reaction]
+        List of Reaction instances.
+    components : List[Component]
+        List of all components involved in the reactions.
+    component_key : ComponentKey
+        The key to use for mapping components (e.g., "Name-Formula").
+
+    Returns
+    -------
+    Optional[Dict[str, List[Dict[str, float]] | List[List[float]]]]
+        A dictionary containing the stoichiometry source and matrices if successful, None otherwise. The dictionary has the following structure:
+        - "source": List[Dict[str, float]] - A list of dictionaries representing the stoichiometry source for each reaction.
+        - "matrix": List[List[float]] - A list of stoichiometry matrices corresponding to each reaction.
+    """
     try:
         # SECTION: validate inputs
         if (
@@ -161,7 +182,18 @@ def build_rxns_stoichiometry(
             component_key=component_key
         )
 
-        return stoichiometry_source
+        # >> check
+        if not stoichiometry_source:
+            logger.error("Failed to build reaction stoichiometry source.")
+            return None
+
+        # result
+        res = {
+            "source": stoichiometry_source[0],
+            "matrix": stoichiometry_source[1]
+        }
+
+        return res
     except Exception as e:
         logger.error(f"Error building reaction stoichiometry: {e}")
         return None
