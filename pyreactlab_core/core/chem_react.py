@@ -2,7 +2,8 @@
 import logging
 import re
 from typing import Dict, Any, List, Optional, Literal, TypedDict
-from pythermodb_settings.models import Component
+from pythermodb_settings.models import Component, ComponentKey
+from pythermodb_settings.utils import set_component_id
 # locals
 from ..configs.constants import (
     R_CONST_J__molK,
@@ -1021,3 +1022,43 @@ class ChemReact:
             return component_map
         except Exception as e:
             raise Exception(f"Error mapping components: {e}")
+
+    def reaction_stoichiometry_dict(
+        self,
+        reaction_stoichiometry: Dict[str, float],
+        component_key: ComponentKey
+    ) -> Dict[str, float]:
+        '''
+        Generate the reaction stoichiometry matrix.
+
+        Parameters
+        ----------
+        reaction_stoichiometry: dict
+            A dictionary containing the stoichiometry of the reaction, where keys are component IDs and values are their coefficients.
+        component_key: ComponentKey
+            The key used to identify components in the reaction.
+
+        Returns
+        -------
+        dict
+            A dictionary representing the reaction stoichiometry, where keys are component IDs and values are their coefficients.
+        '''
+        # >> check
+        if self.components is None:
+            return {}
+
+        # NOTE: component ids
+        component_ids = list(reaction_stoichiometry.keys())
+
+        id_to_component = {}
+        for comp in self.components:
+            comp_id = set_component_id(comp, 'Formula-State')
+            if comp_id in component_ids:
+                # create component id
+                comp_id_new = set_component_id(comp, component_key)
+                id_to_component[comp_id_new] = reaction_stoichiometry[comp_id]
+            else:
+                logging.warning(
+                    f"Component '{comp_id}' not found in reaction stoichiometry.")
+
+        return id_to_component

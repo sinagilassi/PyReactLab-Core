@@ -1,15 +1,18 @@
 # import libs
 from __future__ import annotations
-
+import logging
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, computed_field, model_validator
-from pythermodb_settings.models import Component
+from pythermodb_settings.models import Component, ComponentKey
 # local imports
 from ..core.chem_react import (
     ChemReact,
     ReactionMode,
     PhaseRule
 )
+
+# NOTE: set up logger
+logger = logging.getLogger(__name__)
 
 
 class Reaction(BaseModel):
@@ -198,3 +201,19 @@ class Reaction(BaseModel):
     @property
     def map_components(self) -> Dict[str, Component]:
         return self.analysis.get("map_components", {})
+
+    def reaction_stoichiometry_components(
+        self,
+        component_key: ComponentKey
+    ) -> Dict[str, float]:
+        # >> check
+        if not self.util:
+            logger.warning(
+                "ChemReact utility instance not found. Cannot compute reaction stoichiometry components."
+            )
+            return {}
+
+        return self.util.reaction_stoichiometry_dict(
+            reaction_stoichiometry=self.reaction_stoichiometry,
+            component_key=component_key
+        )
