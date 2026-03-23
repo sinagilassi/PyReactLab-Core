@@ -1,14 +1,20 @@
 # import libs
 import logging
 from typing import List, Optional
+from pythermodb_settings.models import Component, ComponentKey
 # locals
 from ..models.reaction import Reaction
+from ..utils.component_tools import map_component_ids
 
 # NOTE: configure logger
 logger = logging.getLogger(__name__)
 
 
-def build_stoichiometry_matrix(reactions: List[Reaction]):
+def build_stoichiometry_matrix(
+        reactions: List[Reaction],
+        components: Optional[List[Component]],
+        component_key: ComponentKey = "Name-Formula"
+):
     '''
     Build stoichiometry matrix for reactions
 
@@ -16,6 +22,10 @@ def build_stoichiometry_matrix(reactions: List[Reaction]):
     ----------
     reactions : List[Reaction]
         List of Reaction instances
+    components : Optional[List[Component]]
+        List of Component instances
+    component_key : ComponentKey
+        The key used to identify components in the reaction.
 
     Returns
     -------
@@ -102,8 +112,18 @@ def build_stoichiometry_matrix(reactions: List[Reaction]):
             [comp_list[j][item] for item in component_dict.keys()] for j in range(reaction_num)
         ]
 
+        # NOTE: map component ids to components
+        components_ext = {}
+        if components is not None:
+            components_ext = map_component_ids(
+                component_ids=component_list,
+                component=components,
+                component_key=component_key
+            )
+
         # res
         return {
+            "components": components_ext,
             "component_list": component_list,
             "component_dict": component_dict,
             "component_state_list": component_state_list,

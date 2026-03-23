@@ -1,6 +1,7 @@
 # import libs
 import logging
 from typing import List, Optional, Dict
+from pythermodb_settings.models import Component, ComponentKey
 # locals
 from .models.reaction import Reaction
 from .docs.chem_utils import build_stoichiometry_matrix
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def rxn(
         reaction_str: str,
-        name: Optional[str] = None
+        name: Optional[str] = None,
 ) -> Optional[Reaction]:
     """
     Create and analyze a chemical reaction.
@@ -50,7 +51,7 @@ def rxn(
         return None
 
 
-def rxn_stoichiometry(
+def rxn_stoichiometry_matrix(
         reaction: Reaction,
 ) -> Optional[List[float]]:
     """
@@ -85,6 +86,8 @@ def rxn_stoichiometry(
 
 def rxns_stoichiometry(
         reactions: List[Reaction],
+        components: Optional[List[Component]] = None,
+        component_key: ComponentKey = "Name-Formula"
 ) -> Optional[Dict]:
     """
     Get the reaction stoichiometry matrices for a list of chemical reactions.
@@ -109,11 +112,16 @@ def rxns_stoichiometry(
             return None
 
         # SECTION: retrieve stoichiometry matrices
-        result = build_stoichiometry_matrix(reactions=reactions)
+        result = build_stoichiometry_matrix(
+            reactions=reactions,
+            components=components,
+            component_key=component_key
+        )
 
         # NOTE: res
         return {
-            "components": result["component_list"],
+            "components": result["components"],
+            "component_list": result["component_list"],
             "component_ids": result["component_dict"],
             "stoichiometry_matrices_list": result["comp_coeff"],
             "stoichiometry_matrices_dict": result["comp_list"],

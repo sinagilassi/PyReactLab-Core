@@ -72,11 +72,15 @@ class ChemReact:
     # NOTE: component checker
     _component_checker: bool = False
 
+    # NOTE: stoichiometry source
+    _stoichiometry_source: dict[str, Any] = {}
+
     def __init__(
         self,
         reaction_mode_symbol: ReactionMode,
         components: Optional[List[Component]],
-        component_key: ComponentKey
+        component_keys: List[ComponentKey] = [
+            "Name-Formula", "Formula-State", "Name-State"]
     ):
         """
         Initialize the ChemReactUtils class.
@@ -87,7 +91,7 @@ class ChemReact:
             The symbol used to separate reactants and products in a reaction equation.
         components : Optional[List[Component]]
             A list of Component objects involved in the reaction.
-        component_key : ComponentKey
+        component_keys : List[ComponentKey], optional
             The key used to identify components in the reaction.
 
         Notes
@@ -105,7 +109,7 @@ class ChemReact:
         self.components = components
 
         # NOTE: set component key
-        self.component_key = component_key
+        self.component_keys = component_keys
 
         # SECTION: Component id
         # NOTE: component ids
@@ -123,6 +127,12 @@ class ChemReact:
         if self._system_inputs is None:
             raise ValueError("System inputs are not set.")
         return self._system_inputs
+
+    @property
+    def stoichiometry_source(self) -> Dict[str, Any]:
+        """Get the stoichiometry source."""
+        # res
+        return self._stoichiometry_source
 
     def count_carbon(self, molecule: str, coefficient: float) -> float:
         """
@@ -405,9 +415,9 @@ class ChemReact:
                 products,
             )
 
-            # SECTION: reaction stoichiometry dict
-            reaction_stoichiometry_dict = self.reaction_stoichiometry_dict(
-                reaction_stoichiometry
+            # SECTION: build stoichiometry source
+            stoichiometry_source = self.build_stoichiometry_source(
+                reaction_stoichiometry=reaction_stoichiometry
             )
 
             # res
@@ -425,7 +435,7 @@ class ChemReact:
                 'reaction_coefficients': reaction_coefficients,
                 'reaction_stoichiometry': reaction_stoichiometry,
                 'reaction_stoichiometry_matrix': reaction_stoichiometry_matrix,
-                'reaction_stoichiometry_dict': reaction_stoichiometry_dict,
+                'reaction_stoichiometry_source': stoichiometry_source,
                 'carbon_count': carbon_count,
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
@@ -1036,6 +1046,7 @@ class ChemReact:
     def reaction_stoichiometry_dict(
         self,
         reaction_stoichiometry: Dict[str, float],
+        component_key: ComponentKey = "Name-Formula"
     ) -> Dict[str, float]:
         '''
         Generate the reaction stoichiometry matrix.
@@ -1064,10 +1075,45 @@ class ChemReact:
                 # create component id
                 comp_id_new = set_component_id(
                     comp,
-                    self.component_key)  # type: ignore
+                    component_key)  # type: ignore
                 id_to_component[comp_id_new] = reaction_stoichiometry[comp_id]
             else:
                 logging.warning(
                     f"Component '{comp_id}' not found in reaction stoichiometry.")
 
         return id_to_component
+
+    def build_stoichiometry_source(
+            self,
+            reaction_stoichiometry: Dict[str, float],
+    ) -> Dict[str, Any]:
+        """
+        Build the stoichiometry source for the reaction according to the component keys.
+
+        Parameters
+        ----------
+        reaction_stoichiometry : Dict[str, float]
+            A dictionary containing the stoichiometry of the reaction, where keys are component IDs and values are their coefficients.
+        """
+        # >> check
+        if self.components is None:
+            return {}
+
+        # NOTE: component ids
+        component_ids = list(reaction_stoichiometry.keys())
+
+        # NOTE: build stoichiometry source
+        stoichiometry_source = {}
+
+        for key in self.component_keys:
+            id_to_component = self.reaction_stoichiometry_dict(
+                reaction_stoichiometry,
+                component_key=key
+            )
+
+            # set
+            stoichiometry_source[key] = id_to_component
+
+        # set stoichiometry source
+        self._stoichiometry_source = stoichiometry_source
+        return stoichiometry_source

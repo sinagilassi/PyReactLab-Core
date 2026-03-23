@@ -82,8 +82,8 @@ class Reaction(BaseModel):
         default_factory=dict,
         description="A dictionary containing the analysis results of the reaction."
     )
-    component_key: ComponentKey = Field(
-        default='Name-Formula',
+    component_keys: List[ComponentKey] = Field(
+        default=["Name-Formula", "Formula-State", "Name-State"],
         description="The key used to identify components in the reaction analysis."
     )
 
@@ -105,7 +105,7 @@ class Reaction(BaseModel):
         util = ChemReact(
             reaction_mode_symbol=self.reaction_mode_symbol,
             components=self.components,
-            component_key=self.component_key
+            component_keys=self.component_keys
         )
 
         # NOTE: perform analysis
@@ -164,8 +164,8 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
-    def reaction_stoichiometry_dict(self) -> Dict[str, float]:
-        return self.analysis.get("reaction_stoichiometry_dict", {})
+    def reaction_stoichiometry_source(self) -> Dict[str, float]:
+        return self.analysis.get("reaction_stoichiometry_source", {})
 
     @computed_field
     @property

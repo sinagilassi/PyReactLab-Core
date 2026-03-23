@@ -1,5 +1,5 @@
 # import libs
-from pyreactlab_core import rxn, rxn_stoichiometry, rxns_stoichiometry
+from pyreactlab_core import rxn, rxn_stoichiometry_matrix, rxns_stoichiometry
 from rich import print
 
 
@@ -48,7 +48,7 @@ print(
 
 
 # SECTION: Get reaction stoichiometry matrix
-stoichiometry_result = rxn_stoichiometry(
+stoichiometry_result = rxn_stoichiometry_matrix(
     reaction=rxn_1,
 )
 if stoichiometry_result is None:

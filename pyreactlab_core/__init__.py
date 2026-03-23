@@ -8,7 +8,7 @@ from .configs.info import (
     __license__,
 )
 
-from .app import rxn, rxn_stoichiometry, rxns_stoichiometry
+from .app import rxn, rxn_stoichiometry_matrix, rxns_stoichiometry
 
 __all__ = [
     # config
@@ -20,6 +20,6 @@ __all__ = [
     "__license__",
     # app
     "rxn",
-    "rxn_stoichiometry",
+    "rxn_stoichiometry_matrix",
     "rxns_stoichiometry",
 ]

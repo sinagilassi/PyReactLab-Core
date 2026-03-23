@@ -60,7 +60,8 @@ print(f"Reaction Coefficients: {reaction_1.reaction_coefficients}")
 print(f"Reaction Stoichiometry: {reaction_1.reaction_stoichiometry}")
 print(
     f"Reaction Stoichiometry Matrix: {reaction_1.reaction_stoichiometry_matrix}")
-print(f"Reaction Stoichiometry Dict: {reaction_1.reaction_stoichiometry_dict}")
+print(
+    f"Reaction Stoichiometry Source: {reaction_1.reaction_stoichiometry_source}")
 print(f"State Counts: {reaction_1.state_count}")
 print(f"Reaction Phase: {reaction_1.reaction_phase}")
 print(f"Reaction State: {reaction_1.reaction_state}")
