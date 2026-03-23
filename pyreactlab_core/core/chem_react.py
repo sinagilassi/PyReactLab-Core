@@ -3,11 +3,13 @@ import logging
 import re
 from typing import Dict, Any, List, Optional, Literal, TypedDict
 from pythermodb_settings.models import Component
+# locals
 from ..configs.constants import (
     R_CONST_J__molK,
     PRESSURE_REF_Pa,
     TEMPERATURE_REF_K,
 )
+
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -83,6 +85,8 @@ class ChemReact:
             The symbol used to separate reactants and products in a reaction equation.
         components : Optional[List[Component]]
             A list of Component objects involved in the reaction.
+        component_key : ComponentKey
+            The key used to identify components in the reaction.
 
         Notes
         -----
