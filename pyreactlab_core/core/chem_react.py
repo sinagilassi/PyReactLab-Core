@@ -75,7 +75,8 @@ class ChemReact:
     def __init__(
         self,
         reaction_mode_symbol: ReactionMode,
-        components: Optional[List[Component]]
+        components: Optional[List[Component]],
+        component_key: ComponentKey
     ):
         """
         Initialize the ChemReactUtils class.
@@ -102,6 +103,9 @@ class ChemReact:
 
         # NOTE: set components
         self.components = components
+
+        # NOTE: set component key
+        self.component_key = component_key
 
         # SECTION: Component id
         # NOTE: component ids
@@ -401,6 +405,11 @@ class ChemReact:
                 products,
             )
 
+            # SECTION: reaction stoichiometry dict
+            reaction_stoichiometry_dict = self.reaction_stoichiometry_dict(
+                reaction_stoichiometry
+            )
+
             # res
             res = {
                 'name': name,
@@ -416,6 +425,7 @@ class ChemReact:
                 'reaction_coefficients': reaction_coefficients,
                 'reaction_stoichiometry': reaction_stoichiometry,
                 'reaction_stoichiometry_matrix': reaction_stoichiometry_matrix,
+                'reaction_stoichiometry_dict': reaction_stoichiometry_dict,
                 'carbon_count': carbon_count,
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
@@ -1026,7 +1036,6 @@ class ChemReact:
     def reaction_stoichiometry_dict(
         self,
         reaction_stoichiometry: Dict[str, float],
-        component_key: ComponentKey
     ) -> Dict[str, float]:
         '''
         Generate the reaction stoichiometry matrix.
@@ -1035,8 +1044,6 @@ class ChemReact:
         ----------
         reaction_stoichiometry: dict
             A dictionary containing the stoichiometry of the reaction, where keys are component IDs and values are their coefficients.
-        component_key: ComponentKey
-            The key used to identify components in the reaction.
 
         Returns
         -------
@@ -1052,10 +1059,12 @@ class ChemReact:
 
         id_to_component = {}
         for comp in self.components:
-            comp_id = set_component_id(comp, 'Formula-State')
+            comp_id = set_component_id(comp, 'Formula-State')  # type: ignore
             if comp_id in component_ids:
                 # create component id
-                comp_id_new = set_component_id(comp, component_key)
+                comp_id_new = set_component_id(
+                    comp,
+                    self.component_key)  # type: ignore
                 id_to_component[comp_id_new] = reaction_stoichiometry[comp_id]
             else:
                 logging.warning(

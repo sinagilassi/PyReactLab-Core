@@ -82,6 +82,10 @@ class Reaction(BaseModel):
         default_factory=dict,
         description="A dictionary containing the analysis results of the reaction."
     )
+    component_key: ComponentKey = Field(
+        default='Name-Formula',
+        description="The key used to identify components in the reaction analysis."
+    )
 
     @model_validator(mode="after")
     def _run_existing_analysis(self):
@@ -100,7 +104,8 @@ class Reaction(BaseModel):
         # NOTE: analyze reaction
         util = ChemReact(
             reaction_mode_symbol=self.reaction_mode_symbol,
-            components=self.components
+            components=self.components,
+            component_key=self.component_key
         )
 
         # NOTE: perform analysis
@@ -159,6 +164,11 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
+    def reaction_stoichiometry_dict(self) -> Dict[str, float]:
+        return self.analysis.get("reaction_stoichiometry_dict", {})
+
+    @computed_field
+    @property
     def carbon_count(self) -> int:
         return self.analysis.get("carbon_count", 0)
 
@@ -201,19 +211,3 @@ class Reaction(BaseModel):
     @property
     def map_components(self) -> Dict[str, Component]:
         return self.analysis.get("map_components", {})
-
-    def reaction_stoichiometry_components(
-        self,
-        component_key: ComponentKey
-    ) -> Dict[str, float]:
-        # >> check
-        if not self.util:
-            logger.warning(
-                "ChemReact utility instance not found. Cannot compute reaction stoichiometry components."
-            )
-            return {}
-
-        return self.util.reaction_stoichiometry_dict(
-            reaction_stoichiometry=self.reaction_stoichiometry,
-            component_key=component_key
-        )
