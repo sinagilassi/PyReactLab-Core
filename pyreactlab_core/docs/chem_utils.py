@@ -2,6 +2,7 @@
 import logging
 from typing import List, Optional
 from pythermodb_settings.models import Component, ComponentKey
+from pythermodb_settings.utils import set_component_id
 # locals
 from ..models.reaction import Reaction
 from ..utils.component_tools import map_component_ids
@@ -132,3 +133,55 @@ def build_stoichiometry_matrix(
         }
     except Exception as e:
         raise Exception(f"Error defining component ID: {e}")
+
+
+# SECTION: build stoichiometry matrix for reactions
+def build_rxn_stoichiometry_source(
+        reactions: List[Reaction],
+        components: List[Component],
+        component_key: ComponentKey
+):
+    # NOTE: stoichiometry source
+    stoichiometry_source = []
+
+#    iterate over reactions
+    for reaction in reactions:
+        # stoichiometry
+        stoichiometry_ = reaction.reaction_stoichiometry_source.get(
+            component_key, {})
+        # >> check
+        if not stoichiometry_:
+            logger.warning(
+                f"Stoichiometry source not found for reaction: {reaction.name}")
+            return None
+
+        # store
+        stoichiometry_source.append(stoichiometry_)
+
+    # NOTE: map component ids to components
+    components_source = [
+        set_component_id(
+            component=item,
+            component_key=component_key
+        ) for item in components
+    ]
+
+    # NOTE: stoichiometry
+    stoichiometry_result = []
+
+    # iterate over stoichiometry source
+    for i in range(len(reactions)):
+        sto_ = {}
+        for item in components_source:
+            # raw data
+            sto_[item] = 0
+
+        # update
+        stoichiometry_result.append(sto_)
+
+    # update stoichiometry result
+    for i, item in enumerate(stoichiometry_result):
+        for key, value in stoichiometry_source[i].items():
+            item[key] = value
+
+    return stoichiometry_result

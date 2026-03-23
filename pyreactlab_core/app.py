@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 from pythermodb_settings.models import Component, ComponentKey
 # locals
 from .models.reaction import Reaction
-from .docs.chem_utils import build_stoichiometry_matrix
+from .docs.chem_utils import build_stoichiometry_matrix, build_rxn_stoichiometry_source
 
 # NOTE: configure logger
 logger = logging.getLogger(__name__)
@@ -128,4 +128,40 @@ def rxns_stoichiometry(
         }
     except Exception as e:
         logger.error(f"Error retrieving reaction stoichiometry matrices: {e}")
+        return None
+
+# SECTION: Build stoichiometry for reactions
+
+
+def build_rxns_stoichiometry(
+    reactions: List[Reaction],
+    components: List[Component],
+    component_key: ComponentKey
+):
+    try:
+        # SECTION: validate inputs
+        if (
+            not isinstance(reactions, list) or
+            not all(isinstance(rxn, Reaction) for rxn in reactions)
+        ):
+            logger.error("Invalid reactions list provided.")
+            return None
+
+        if (
+            not isinstance(components, list) or
+            not all(isinstance(comp, Component) for comp in components)
+        ):
+            logger.error("Invalid components list provided.")
+            return None
+
+        # SECTION: build stoichiometry source
+        stoichiometry_source = build_rxn_stoichiometry_source(
+            reactions=reactions,
+            components=components,
+            component_key=component_key
+        )
+
+        return stoichiometry_source
+    except Exception as e:
+        logger.error(f"Error building reaction stoichiometry: {e}")
         return None
