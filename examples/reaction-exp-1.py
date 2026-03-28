@@ -28,11 +28,18 @@ component_h2o = Component(
     state="g"
 )
 
+component_co = Component(
+    name="Carbon Monoxide",
+    formula="CO",
+    state="g"
+)
+
 components = [
-    component_co2,
     component_h2,
+    component_co,
     component_ch3oh,
-    component_h2o
+    component_h2o,
+    component_co2,
 ]
 
 # components = []
