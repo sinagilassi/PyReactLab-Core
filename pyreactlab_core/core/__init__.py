@@ -7,11 +7,17 @@ from .chem_react import (
     Product,
     ChemReact
 )
+from .chem_react_utils import ChemReactUtils
+from .reaction_component_mapper import ReactionComponentMapper
+from .reaction_network_analysis import ReactionNetworkAnalysis
 
 __all__ = [
     "ReactionMode",
     "PhaseRule",
     "Reactant",
     "Product",
-    "ChemReact"
+    "ChemReact",
+    "ChemReactUtils",
+    "ReactionComponentMapper",
+    "ReactionNetworkAnalysis",
 ]
