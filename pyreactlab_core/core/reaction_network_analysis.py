@@ -1,26 +1,16 @@
 # import libs
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 
 # SECTION: ReactionNetworkAnalysis class
 class ReactionNetworkAnalysis:
     """Utilities that analyze groups of reactions."""
 
-    # NOTE: supplied by ChemReact and used to split raw reaction strings
-    reaction_mode_symbol: str
-
-    def __init__(self, reaction_mode_symbol: str):
-        """
-        Initialize reaction network analysis settings.
-        """
-        # SECTION: reaction mode
-        # NOTE: used as the delimiter between reactants and products
-        self.reaction_mode_symbol = reaction_mode_symbol
-
     def analyze_overall_reactions(
             self,
-            reactions: List[Dict[str, str]]
+            reactions: List[Dict[str, str]],
+            reaction_mode_symbol: str | None = None,
     ) -> Dict[str, List[str]]:
         """
         Analyze a list of chemical reactions and classify species.
@@ -30,11 +20,24 @@ class ReactionNetworkAnalysis:
             all_reactants = set()
             all_products = set()
 
+            # SECTION: reaction mode
+            # NOTE: prefer explicit method input, fall back to ChemReact state
+            reaction_symbol = reaction_mode_symbol
+            if reaction_symbol is None:
+                reaction_symbol = cast(
+                    str,
+                    getattr(self, 'reaction_mode_symbol')
+                )
+
+            # ! a reaction symbol is required for raw reaction splitting
+            if not isinstance(reaction_symbol, str):
+                raise ValueError("reaction_mode_symbol must be a string.")
+
             # SECTION: parse each raw reaction
             for reaction in reactions:
                 # NOTE: split equation into reactant and product sides
                 sides = reaction['reaction'].split(
-                    self.reaction_mode_symbol.strip()
+                    reaction_symbol.strip()
                 )
 
                 # NOTE: simple molecule/state pattern for network classification

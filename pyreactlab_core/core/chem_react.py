@@ -114,11 +114,8 @@ class ChemReact(
             available_phases=PhaseRule.__args__,
         )
 
-        # NOTE: initialize network analysis settings
-        ReactionNetworkAnalysis.__init__(
-            self,
-            reaction_mode_symbol=reaction_mode_symbol,
-        )
+        # NOTE: set reaction mode symbol used by this reaction parser
+        self.reaction_mode_symbol = reaction_mode_symbol
 
         # NOTE: initialize component mapping settings
         ReactionComponentMapper.__init__(
