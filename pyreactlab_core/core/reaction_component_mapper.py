@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 # import packages
 from pythermodb_settings.models import Component, ComponentKey
@@ -17,6 +17,40 @@ class ReactionComponentMapper:
     component_keys: List[ComponentKey]
     _component_checker: bool
     _stoichiometry_source: dict[str, Any]
+
+    def __init__(
+        self,
+        components: Optional[List[Component]],
+        component_keys: Optional[List[ComponentKey]] = None,
+        id_separator: str = "-",
+    ):
+        """
+        Initialize component mapping state.
+        """
+        # SECTION: component source
+        # NOTE: configured components are used to build Component lookups
+        self.components = components
+
+        # SECTION: component keys
+        # NOTE: each key produces a stoichiometry source dictionary
+        if component_keys is not None:
+            self.component_keys = component_keys
+        else:
+            self.component_keys = []
+
+        # SECTION: component ids
+        # ! ids must match analyze_reaction molecule_state values
+        if components is None:
+            self.component_ids = []
+        else:
+            self.component_ids = [
+                f"{comp.formula}{id_separator}{comp.state}" for comp in components
+            ]
+
+        # SECTION: mapper state defaults
+        # NOTE: these values are updated while analyzing reactions
+        self._component_checker = False
+        self._stoichiometry_source = {}
 
     def collect_components(
         self,

@@ -10,6 +10,18 @@ class ChemReactUtils:
     # NOTE: supported full phase names
     available_phases = ("gas", "liquid", "aqueous", "solid")
 
+    def __init__(
+        self,
+        available_phases: tuple[str, ...] | None = None,
+    ):
+        """
+        Initialize general chemical reaction utility settings.
+        """
+        # SECTION: phase configuration
+        # NOTE: child classes can override the supported phase names
+        if available_phases is not None:
+            self.available_phases = available_phases
+
     def count_carbon(self, molecule: str, coefficient: float) -> float:
         """
         Count the number of carbon atoms in a molecule.

@@ -10,6 +10,14 @@ class ReactionNetworkAnalysis:
     # NOTE: supplied by ChemReact and used to split raw reaction strings
     reaction_mode_symbol: str
 
+    def __init__(self, reaction_mode_symbol: str):
+        """
+        Initialize reaction network analysis settings.
+        """
+        # SECTION: reaction mode
+        # NOTE: used as the delimiter between reactants and products
+        self.reaction_mode_symbol = reaction_mode_symbol
+
     def analyze_overall_reactions(
             self,
             reactions: List[Dict[str, str]]
