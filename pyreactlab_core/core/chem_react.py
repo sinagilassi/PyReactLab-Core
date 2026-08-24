@@ -13,30 +13,11 @@ from ..configs.constants import (
 from .chem_react_utils import ChemReactUtils
 from .reaction_component_mapper import ReactionComponentMapper
 from .reaction_network_analysis import ReactionNetworkAnalysis
+from ..models.reactions import Reactant, Product, PhaseRule
 
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
-
-# NOTE: Phase Rule
-PhaseRule = Literal["gas", "liquid", "aqueous", "solid"]
-
-# SECTION: Models
-# NOTE: reactants
-
-
-class Reactant(TypedDict):
-    coefficient: float
-    molecule: str
-    state: str
-    molecule_state: str
-
-
-class Product(TypedDict):
-    coefficient: float
-    molecule: str
-    state: str
-    molecule_state: str
 
 
 # SECTION: ChemReact class
@@ -185,7 +166,15 @@ class ChemReact(
             # pattern = r'(\d*\.?\d+)?(\w+)\((\w)\)'
             # pattern = r'(?:(\d*\.?\d+)\s*)?([A-Z][a-zA-Z0-9]*)\s*(?:\((\w)\))?'
             # NOTE: multi-purpose pattern
-            pattern = r'(?:(\d*\.?\d+)\s*)?(e(?:\{-?1?\}|[+-])?|\[[^\]\s]+\](?:\d+)?(?:\{[^{}\s]+\})?|(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*)(?:[·*](?:\d+)?(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*))*(?:\{[^{}\s]+\})?)\s*(?:\((g|l|s|aq)\))?'
+            # pattern = r'(?:(\d*\.?\d+)\s*)?(e(?:\{-?1?\}|[+-])?|\[[^\]\s]+\](?:\d+)?(?:\{[^{}\s]+\})?|(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*)(?:[·*](?:\d+)?(?:(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*))*(?:\{[^{}\s]+\})?)\s*(?:\((g|l|s|aq)\))?'
+
+            # v2
+            pattern = r'(?:(\d*\.?\d+)\s*)?(e|[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*(?:[·*]\d*[A-Z][A-Za-z0-9]*(?:\((?!(?:g|l|s|aq)\))[A-Za-z0-9]+\)\d*)*)*)\s*(?:\{?((?:\d+)?[+-])\}?)?\s*(?:\((g|l|s|aq)\))?'
+            # ! parse as:
+            # 1. Optional coefficient (digits with optional decimal)
+            # 2. Molecule formula (starting with uppercase letter, followed by alphanumeric characters)
+            # 3. Optional charge (digits with optional sign)
+            # 4. Optional state (g, l, s, aq)
 
             # SECTION: SECTION: Extract reactants and products
             # Extract reactants
@@ -194,7 +183,8 @@ class ChemReact(
                 {
                     'coefficient': float(r[0]) if r[0] else float(1),
                     'molecule': r[1],
-                    'state': r[2] if r[2] else phase_set,
+                    'charge': int(r[2]) if r[2] else 0,
+                    'state': r[3] if r[3] else phase_set,
                     'molecule_state': ''
                 } for r in reactants_raw
             ]
@@ -228,7 +218,8 @@ class ChemReact(
                 {
                     'coefficient': float(p[0]) if p[0] else float(1),
                     'molecule': p[1],
-                    'state': p[2] if p[2] else phase_set,
+                    'charge': int(p[2]) if p[2] else 0,
+                    'state': p[3] if p[3] else phase_set,
                     'molecule_state': ''
                 } for p in products_raw
             ]
@@ -310,6 +301,33 @@ class ChemReact(
             for p in products:
                 # set
                 reaction_state[p['molecule_state']] = p['state']
+
+            # SECTION: charge count for each component
+            charge_count = {}
+            for r in reactants:
+                charge_count[r['molecule_state']] = self.count_charge(
+                    r['molecule'],
+                    r['coefficient'],
+                    r['charge']
+                )
+            for p in products:
+                charge_count[p['molecule_state']] = self.count_charge(
+                    p['molecule'],
+                    p['coefficient'],
+                    p['charge']
+                )
+
+            # SECTION: total charge count for reactants and products
+            total_charge_count = self.count_total_charge(
+                reactants=reactants,
+                products=products
+            )
+            # ? total reactant charge
+            total_reactant_charge = total_charge_count['total_reactant_charge']
+            # ? total product charge
+            total_product_charge = total_charge_count['total_product_charge']
+            # ? net charge
+            net_charge = total_charge_count['net_charge']
 
             # NOTE: reaction phase
             # reaction
@@ -411,6 +429,10 @@ class ChemReact(
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
                 'state_count': state_count,
+                'charge_count': charge_count,
+                'total_reactant_charge': total_reactant_charge,
+                'total_product_charge': total_product_charge,
+                'net_charge': net_charge,
                 'components': components,
                 'map_components': map_components,
                 'component_checker': self._component_checker,
