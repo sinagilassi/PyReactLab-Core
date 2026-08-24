@@ -24,9 +24,20 @@ class ChemReactUtils:
         if available_phases is not None:
             self.available_phases = available_phases
 
+    # ::: count carbon
     def count_carbon(self, molecule: str, coefficient: float) -> float:
         """
-        Count the number of carbon atoms in a molecule.
+        Count the total number of carbon atoms in a molecule,
+        scaled by the stoichiometric coefficient.
+
+        Examples
+        --------
+        CO2        -> 1 carbon
+        C2H6       -> 2 carbons
+        CH3COOH    -> 2 carbons
+        CaCO3      -> 1 carbon
+        CuSO4      -> 0 carbon
+        C6H12O6    -> 6 carbons
         """
         try:
             # SECTION: validate inputs
@@ -38,23 +49,54 @@ class ChemReactUtils:
             if not isinstance(coefficient, (int, float)):
                 raise ValueError("Coefficient must be an integer or float.")
 
-            # SECTION: carbon symbol matching
-            # ! do not count lowercase carbon inside another element symbol
-            if re.search(r'C(?![a-z])', molecule):
-                # NOTE: multiply atom occurrences by stoichiometric coefficient
-                carbon_count = len(
-                    re.findall(
-                        r'C(?![a-z])',
-                        molecule
-                    )
-                ) * coefficient
-                return carbon_count
-            else:
-                # NOTE: molecule has no carbon atoms
-                return 0.0
+            # SECTION: find carbon atoms
+            # C(?![a-z]) ensures C is not part of Ca, Cu, Cl, Co, ...
+            # (\d*) captures an optional numeric subscript after C
+            matches = re.findall(r'C(?![a-z])(\d*)', molecule)
+
+            # SECTION: calculate carbon count
+            carbon_count = sum(
+                int(count) if count else 1
+                for count in matches
+            )
+
+            return carbon_count * coefficient
         except Exception as e:
             raise Exception(
                 f"Error counting carbon in molecule '{molecule}': {e}")
+
+    # ::: count total carbon
+    def count_total_carbon(
+        self,
+        reactants: List[Reactant],
+        products: List[Product]
+    ) -> Dict[str, float]:
+        """
+        Count the total number of carbon atoms in reactants and products.
+        """
+        try:
+            # SECTION: calculate total carbon for reactants
+            total_reactant_carbon = sum(
+                self.count_carbon(r['molecule'], r['coefficient'])
+                for r in reactants
+            )
+
+            # SECTION: calculate total carbon for products
+            total_product_carbon = sum(
+                self.count_carbon(p['molecule'], p['coefficient'])
+                for p in products
+            )
+
+            # NOTE: return total carbon counts as a dictionary
+            return {
+                'total_reactant_carbon': total_reactant_carbon,
+                'total_product_carbon': total_product_carbon,
+                'net_carbon': total_product_carbon - total_reactant_carbon
+            }
+        except Exception as e:
+            raise Exception(f"Error counting total carbon in reaction: {e}")
+
+    # :::phase rule analysis
 
     def phase_rule_analysis(self, phase_rule: Optional[str] = None) -> str:
         """
