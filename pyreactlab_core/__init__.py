@@ -10,8 +10,8 @@ from .configs.info import (
 
 # NOTE: configs
 from .configs.constants import (
-    REACTION_MODES,
-    REACTION_MODE_SYMBOLS
+    REACTION_SYMBOLIC_MODES,
+    ReactionMode
 )
 
 # NOTE: app
@@ -31,8 +31,8 @@ __all__ = [
     "__email__",
     "__license__",
     # configs
-    "REACTION_MODES",
-    "REACTION_MODE_SYMBOLS",
+    "REACTION_SYMBOLIC_MODES",
+    "ReactionMode",
     # app
     "rxn",
     "rxn_stoichiometry_matrix",
