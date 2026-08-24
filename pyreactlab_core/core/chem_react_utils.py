@@ -2,7 +2,7 @@
 import re
 from typing import Dict, List, Optional
 # locals
-from ..configs.constants import REACTION_SYMBOLIC_MODES
+from ..models.reactions import Reactant, Product
 
 
 # SECTION: ChemReactUtils class
@@ -42,8 +42,12 @@ class ChemReactUtils:
             # ! do not count lowercase carbon inside another element symbol
             if re.search(r'C(?![a-z])', molecule):
                 # NOTE: multiply atom occurrences by stoichiometric coefficient
-                carbon_count = len(re.findall(
-                    r'C(?![a-z])', molecule)) * coefficient
+                carbon_count = len(
+                    re.findall(
+                        r'C(?![a-z])',
+                        molecule
+                    )
+                ) * coefficient
                 return carbon_count
             else:
                 # NOTE: molecule has no carbon atoms
@@ -179,3 +183,60 @@ class ChemReactUtils:
                     f"Unknown reaction mode symbol: {reaction_mode_symbol}")
         except Exception as e:
             raise Exception(f"Error determining reaction type: {e}")
+
+    # ! count charge
+    def count_charge(
+        self,
+        molecule: str,
+        coefficient: float,
+        charge: int
+    ) -> float:
+        """
+        Count the total charge of a molecule based on its charge and coefficient.
+        """
+        try:
+            # SECTION: validate inputs
+            if not isinstance(molecule, str):
+                raise ValueError("Molecule must be a string.")
+            if not isinstance(coefficient, (int, float)):
+                raise ValueError("Coefficient must be an integer or float.")
+            if not isinstance(charge, int):
+                raise ValueError("Charge must be an integer.")
+
+            # SECTION: calculate total charge
+            total_charge = charge * coefficient
+            return total_charge
+        except Exception as e:
+            raise Exception(
+                f"Error counting charge in molecule '{molecule}': {e}")
+
+    # ! count total charge in reaction
+    def count_total_charge(
+        self,
+        reactants: List[Reactant],
+        products: List[Product]
+    ) -> Dict[str, float]:
+        """
+        Count the total charge of reactants and products in a reaction.
+        """
+        try:
+            # SECTION: calculate total charge for reactants
+            total_reactant_charge = sum(
+                self.count_charge(r['molecule'], r['coefficient'], r['charge'])
+                for r in reactants
+            )
+
+            # SECTION: calculate total charge for products
+            total_product_charge = sum(
+                self.count_charge(p['molecule'], p['coefficient'], p['charge'])
+                for p in products
+            )
+
+            # NOTE: return total charges as a dictionary
+            return {
+                'total_reactant_charge': total_reactant_charge,
+                'total_product_charge': total_product_charge,
+                'net_charge': total_product_charge - total_reactant_charge
+            }
+        except Exception as e:
+            raise Exception(f"Error counting total charge in reaction: {e}")
