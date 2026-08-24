@@ -8,6 +8,7 @@ from ..configs.constants import (
     R_CONST_J__molK,
     PRESSURE_REF_Pa,
     TEMPERATURE_REF_K,
+    ReactionMode,
 )
 from .chem_react_utils import ChemReactUtils
 from .reaction_component_mapper import ReactionComponentMapper
@@ -16,9 +17,6 @@ from .reaction_network_analysis import ReactionNetworkAnalysis
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
-
-# NOTE: Reaction Mode
-ReactionMode = Literal["<=>", "=>", "="]
 
 # NOTE: Phase Rule
 PhaseRule = Literal["gas", "liquid", "aqueous", "solid"]
@@ -116,6 +114,8 @@ class ChemReact(
 
         # NOTE: set reaction mode symbol used by this reaction parser
         self.reaction_mode_symbol = reaction_mode_symbol
+        # >> reaction type
+        self.reaction_type = self.get_reaction_type(reaction_mode_symbol)
 
         # NOTE: initialize component mapping settings
         ReactionComponentMapper.__init__(
@@ -393,6 +393,8 @@ class ChemReact(
             res = {
                 'name': name,
                 'reaction': reaction,
+                'reaction_mode_symbol': self.reaction_mode_symbol,
+                'reaction_type': self.reaction_type,
                 "component_ids": component_ids,
                 "all_components": all_components,
                 "symbolic_reaction": symbolic_reaction,
@@ -417,4 +419,3 @@ class ChemReact(
             return res
         except Exception as e:
             raise Exception(f"Error analyzing reaction: {e}")
-
