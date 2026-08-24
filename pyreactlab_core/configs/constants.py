@@ -38,3 +38,44 @@ PERIODIC_TABLE_ELEMENTS = [
     "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn",
     "Nh", "Fl", "Mc", "Lv", "Ts", "Og",
 ]
+
+# SECTION: Reaction
+REACTION_MODES = {
+    # irreversible
+    "->":  ("irreversible", "forward"),
+    "=>":  ("irreversible", "forward"),
+    "→":   ("irreversible", "forward"),
+    "⇒":   ("irreversible", "forward"),
+
+    # backward irreversible
+    "<-":  ("irreversible", "backward"),
+    "←":   ("irreversible", "backward"),
+
+    # reversible
+    "<=>": ("reversible", "forward"),
+    "<->": ("reversible", "forward"),
+    "⇌":   ("reversible", "forward"),
+    "↔":   ("reversible", "forward"),
+
+    # thermodynamic equilibrium
+    "=":   ("equilibrium", "forward"),
+}
+
+# NOTE: list of all reaction mode symbols
+REACTION_MODE_SYMBOLS = list(REACTION_MODES.keys())
+
+# NOTE: irreversible reaction mode symbols
+IRREVERSIBLE_REACTION_MODE_SYMBOLS = [
+    "->", "=>", "→", "⇒",
+    "<-", "←"
+]
+
+# NOTE: reversible reaction mode symbols
+REVERSIBLE_REACTION_MODE_SYMBOLS = [
+    "<=>", "<->", "⇌", "↔"
+]
+
+# NOTE: equilibrium reaction mode symbols
+EQUILIBRIUM_REACTION_MODE_SYMBOLS = [
+    "="
+]
