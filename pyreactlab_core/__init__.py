@@ -1,4 +1,4 @@
-# config
+# NOTE: config
 from .configs.info import (
     __version__,
     __author__,
@@ -8,6 +8,13 @@ from .configs.info import (
     __license__,
 )
 
+# NOTE: configs
+from .configs.constants import (
+    REACTION_MODES,
+    REACTION_MODE_SYMBOLS
+)
+
+# NOTE: app
 from .app import (
     rxn,
     rxn_stoichiometry_matrix,
@@ -23,6 +30,9 @@ __all__ = [
     "__description__",
     "__email__",
     "__license__",
+    # configs
+    "REACTION_MODES",
+    "REACTION_MODE_SYMBOLS",
     # app
     "rxn",
     "rxn_stoichiometry_matrix",
