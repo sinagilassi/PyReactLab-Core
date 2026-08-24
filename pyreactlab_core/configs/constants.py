@@ -1,4 +1,6 @@
 # import libs
+from __future__ import annotations
+from typing import Literal
 
 # SECTION: PyThermoDBLink/PyThermoDB
 import math
@@ -40,7 +42,7 @@ PERIODIC_TABLE_ELEMENTS = [
 ]
 
 # SECTION: Reaction
-REACTION_MODES = {
+REACTION_SYMBOLIC_MODES = {
     # irreversible
     "->":  ("irreversible", "forward"),
     "=>":  ("irreversible", "forward"),
@@ -61,9 +63,6 @@ REACTION_MODES = {
     "=":   ("equilibrium", "forward"),
 }
 
-# NOTE: list of all reaction mode symbols
-REACTION_MODE_SYMBOLS = list(REACTION_MODES.keys())
-
 # NOTE: irreversible reaction mode symbols
 IRREVERSIBLE_REACTION_MODE_SYMBOLS = [
     "->", "=>", "→", "⇒",
@@ -79,3 +78,13 @@ REVERSIBLE_REACTION_MODE_SYMBOLS = [
 EQUILIBRIUM_REACTION_MODE_SYMBOLS = [
     "="
 ]
+
+# NOTE: all reaction mode symbols
+ALL_REACTION_MODE_SYMBOLS = (
+    IRREVERSIBLE_REACTION_MODE_SYMBOLS +
+    REVERSIBLE_REACTION_MODE_SYMBOLS +
+    EQUILIBRIUM_REACTION_MODE_SYMBOLS
+)
+
+# NOTE: Reaction Mode
+ReactionMode = Literal["<=>", "=>", "="]
