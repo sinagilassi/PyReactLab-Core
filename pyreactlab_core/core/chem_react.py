@@ -183,7 +183,7 @@ class ChemReact(
                 {
                     'coefficient': float(r[0]) if r[0] else float(1),
                     'molecule': r[1],
-                    'charge': int(r[2]) if r[2] else 0,
+                    'charge': self.parse_charge(r[2]),
                     'state': r[3] if r[3] else phase_set,
                     'molecule_state': ''
                 } for r in reactants_raw
@@ -218,7 +218,7 @@ class ChemReact(
                 {
                     'coefficient': float(p[0]) if p[0] else float(1),
                     'molecule': p[1],
-                    'charge': int(p[2]) if p[2] else 0,
+                    'charge': self.parse_charge(p[2]),
                     'state': p[3] if p[3] else phase_set,
                     'molecule_state': ''
                 } for p in products_raw

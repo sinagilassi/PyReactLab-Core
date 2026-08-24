@@ -227,6 +227,32 @@ class ChemReactUtils:
             raise Exception(f"Error determining reaction type: {e}")
 
     # ! count charge
+    def parse_charge(self, charge: str) -> int:
+        """
+        Convert reaction charge notation to an integer charge.
+        """
+        try:
+            # SECTION: empty or missing charge
+            if charge == "":
+                return 0
+
+            # SECTION: normalize notation
+            charge = charge.strip()
+            if charge in ("+", "-"):
+                return 1 if charge == "+" else -1
+
+            # SECTION: charge magnitude with trailing sign, e.g. 2+ or 3-
+            match = re.fullmatch(r"(\d+)([+-])", charge)
+            if match:
+                magnitude = int(match.group(1))
+                sign = match.group(2)
+                return magnitude if sign == "+" else -magnitude
+
+            # SECTION: signed integer fallback, e.g. +2 or -2
+            return int(charge)
+        except Exception as e:
+            raise Exception(f"Error parsing charge '{charge}': {e}")
+
     def count_charge(
         self,
         molecule: str,
