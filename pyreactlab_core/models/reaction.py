@@ -7,7 +7,7 @@ from pythermodb_settings.models import Component, ComponentKey
 # local imports
 from ..configs.constants import ReactionMode
 from ..core.chem_react import ChemReact
-from ..utils.reaction_tools import get_reaction_mode_symbol
+from ..utils.reaction_tools import get_reaction_mode_symbol, normalize_reaction_expression
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -110,6 +110,9 @@ class Reaction(BaseModel):
             components=self.components,
             component_keys=self.component_keys
         )
+
+        # NOTE: normalize reaction string
+        self.reaction = normalize_reaction_expression(self.reaction)
 
         # NOTE: perform analysis
         self.analysis = util.analyze_reaction(
