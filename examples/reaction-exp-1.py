@@ -48,7 +48,7 @@ components = [
 # NOTE: define components
 reaction_1 = Reaction(
     name="Combustion of Methane",
-    reaction="CO2(g) + 3H2(g) = CH3OH(g) + H2O(g)",
+    reaction="CO2(g) + 3H2(g) ⇌ CH3OH(g) + H2O(g)",
     components=components
 )
 
