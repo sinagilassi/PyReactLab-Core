@@ -48,7 +48,7 @@ components = [
 # NOTE: define components
 reaction_1 = Reaction(
     name="Combustion of Methane",
-    reaction="CO2(g) + 3H2(g) => CH3OH(g) + H2O(g)",
+    reaction="CO2(g) + 3H2(g) = CH3OH(g) + H2O(g)",
     components=components
 )
 
@@ -58,6 +58,9 @@ print(
 print(f"Reaction: {reaction_1.reaction}")
 print(f"Component IDs: {reaction_1.component_ids}")
 print(f"Reaction Mode Symbol: {reaction_1.reaction_mode_symbol}")
+print(
+    f"reaction type: {reaction_1.reaction_type}"
+)
 print(
     f"Symbolic Unbalanced Reaction: {reaction_1.symbolic_unbalanced_reaction}")
 print(f"Symbolic Reaction: {reaction_1.symbolic_reaction}")
