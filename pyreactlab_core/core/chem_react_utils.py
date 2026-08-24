@@ -209,7 +209,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error checking equilibrium: {e}")
 
-    def reaction_type(self, reaction_mode_symbol: str) -> str:
+    def get_reaction_type(self, reaction_mode_symbol: str) -> str:
         """
         Determine the type of reaction based on the reaction mode symbol.
 
