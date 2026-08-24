@@ -202,6 +202,26 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
+    def charge_count(self) -> Dict[str, int]:
+        return self.analysis.get("charge_count", {})
+
+    @computed_field
+    @property
+    def total_reactant_charge(self) -> int:
+        return self.analysis.get("total_reactant_charge", 0)
+
+    @computed_field
+    @property
+    def total_product_charge(self) -> int:
+        return self.analysis.get("total_product_charge", 0)
+
+    @computed_field
+    @property
+    def net_charge(self) -> int:
+        return self.analysis.get("net_charge", 0)
+
+    @computed_field
+    @property
     def component_ids(self) -> Dict[str, int]:
         return self.analysis.get("component_ids", {})
 
