@@ -89,9 +89,9 @@ class ChemReactUtils:
 
             # NOTE: return total carbon counts as a dictionary
             return {
-                'total_reactant_carbon': total_reactant_carbon,
-                'total_product_carbon': total_product_carbon,
-                'net_carbon': total_product_carbon - total_reactant_carbon
+                'total_reactant_carbon_count': total_reactant_carbon,
+                'total_product_carbon_count': total_product_carbon,
+                'net_carbon_count': total_product_carbon - total_reactant_carbon
             }
         except Exception as e:
             raise Exception(f"Error counting total carbon in reaction: {e}")
