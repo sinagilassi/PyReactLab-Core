@@ -50,6 +50,7 @@ REACTION_SYMBOLIC_MODES = {
     "⇒":   ("irreversible", "forward"),
 
     # backward irreversible
+    # ! not recommended for use in reaction expressions
     "<-":  ("irreversible", "backward"),
     "←":   ("irreversible", "backward"),
 
@@ -88,3 +89,7 @@ ALL_REACTION_MODE_SYMBOLS = (
 
 # NOTE: Reaction Mode
 ReactionMode = Literal["<=>", "=>", "="]
+# NOTE: Reaction Type
+ReactionType = Literal["irreversible", "reversible", "equilibrium"]
+# NOTE: Reaction Direction
+ReactionDirection = Literal["forward", "backward"]
