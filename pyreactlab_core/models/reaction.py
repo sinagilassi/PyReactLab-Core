@@ -187,6 +187,21 @@ class Reaction(BaseModel):
 
     @computed_field
     @property
+    def net_carbon_count(self) -> float:
+        return self.analysis.get("net_carbon_count", 0.0)
+
+    @computed_field
+    @property
+    def total_reactant_carbon_count(self) -> float:
+        return self.analysis.get("total_reactant_carbon_count", 0.0)
+
+    @computed_field
+    @property
+    def total_product_carbon_count(self) -> float:
+        return self.analysis.get("total_product_carbon_count", 0.0)
+
+    @computed_field
+    @property
     def reaction_state(self) -> Dict[str, str]:
         return self.analysis.get("reaction_state", {})
 
