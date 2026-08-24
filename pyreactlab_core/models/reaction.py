@@ -5,17 +5,9 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, computed_field, model_validator
 from pythermodb_settings.models import Component, ComponentKey
 # local imports
-from ..configs.constants import (
-    REACTION_MODES,
-    REACTION_MODE_SYMBOLS,
-    IRREVERSIBLE_REACTION_MODE_SYMBOLS,
-    REVERSIBLE_REACTION_MODE_SYMBOLS,
-    EQUILIBRIUM_REACTION_MODE_SYMBOLS
-)
-from ..core.chem_react import (
-    ChemReact,
-    ReactionMode,
-)
+from ..configs.constants import ReactionMode
+from ..core.chem_react import ChemReact
+from ..utils.reaction_tools import get_reaction_mode_symbol
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -101,17 +93,16 @@ class Reaction(BaseModel):
 
     @model_validator(mode="after")
     def _run_existing_analysis(self):
-        # NOTE: check reaction mode symbol
-        if "<=>" in self.reaction:
-            self.reaction_mode_symbol = "<=>"
-        elif "=>" in self.reaction:
-            self.reaction_mode_symbol = "=>"
-        elif "=" in self.reaction:
-            self.reaction_mode_symbol = "="
+        # NOTE: validate reaction mode symbol
+        if self.reaction_mode_symbol is None:
+            self.reaction_mode_symbol = get_reaction_mode_symbol(self.reaction)
         else:
-            raise ValueError(
-                f"Invalid reaction format in reaction: {self.reaction}"
-            )
+            # validate provided reaction mode symbol
+            if self.reaction_mode_symbol not in ["<=>", "=>", "="]:
+                raise ValueError(
+                    f"Invalid reaction mode symbol: {self.reaction_mode_symbol}. "
+                    f"Must be one of ['<=>', '=>', '=']."
+                )
 
         # NOTE: analyze reaction
         util = ChemReact(
@@ -135,6 +126,11 @@ class Reaction(BaseModel):
     @property
     def symbolic_reaction(self) -> str:
         return self.analysis.get("symbolic_reaction", "")
+
+    @computed_field
+    @property
+    def reaction_type(self) -> str:
+        return self.analysis.get("reaction_type", "")
 
     @computed_field
     @property
