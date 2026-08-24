@@ -293,6 +293,18 @@ class ChemReact(
                     p['coefficient']
                 )
 
+            # NOTE total carbon count for reactants and products
+            total_carbon_count = self.count_total_carbon(
+                reactants=reactants,
+                products=products
+            )
+            # ? total reactant carbon count
+            total_reactant_carbon_count = total_carbon_count['total_reactant_carbon_count']
+            # ? total product carbon count
+            total_product_carbon_count = total_carbon_count['total_product_carbon_count']
+            # ? net carbon count
+            net_carbon_count = total_carbon_count['net_carbon_count']
+
             # SECTION: reaction state
             reaction_state = {}
             for r in reactants:
@@ -426,6 +438,9 @@ class ChemReact(
                 'reaction_stoichiometry_matrix': reaction_stoichiometry_matrix,
                 'reaction_stoichiometry_source': stoichiometry_source,
                 'carbon_count': carbon_count,
+                'total_reactant_carbon_count': total_reactant_carbon_count,
+                'total_product_carbon_count': total_product_carbon_count,
+                'net_carbon_count': net_carbon_count,
                 'reaction_state': reaction_state,
                 'reaction_phase': reaction_phase,
                 'state_count': state_count,
