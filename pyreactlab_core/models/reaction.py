@@ -5,10 +5,16 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, computed_field, model_validator
 from pythermodb_settings.models import Component, ComponentKey
 # local imports
+from ..configs.constants import (
+    REACTION_MODES,
+    REACTION_MODE_SYMBOLS,
+    IRREVERSIBLE_REACTION_MODE_SYMBOLS,
+    REVERSIBLE_REACTION_MODE_SYMBOLS,
+    EQUILIBRIUM_REACTION_MODE_SYMBOLS
+)
 from ..core.chem_react import (
     ChemReact,
     ReactionMode,
-    PhaseRule
 )
 
 # NOTE: set up logger
@@ -29,6 +35,8 @@ class Reaction(BaseModel):
         The symbol used to separate reactants and products in a reaction equation.
     analysis : Dict[str, Any]
         A dictionary containing the analysis results of the reaction.
+    component_keys : List[ComponentKey]
+        The key used to identify components in the reaction analysis, with a default value of ["Formula-State", "Name-State", "Name-Formula"].
 
     Properties
     ----------
@@ -119,6 +127,8 @@ class Reaction(BaseModel):
                 "reaction": self.reaction
             },
         )
+
+        # ! return self to allow for method chaining or further processing if needed
         return self
 
     @computed_field
