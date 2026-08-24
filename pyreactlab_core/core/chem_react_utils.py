@@ -147,3 +147,91 @@ class ChemReactUtils:
             return state_count
         except Exception as e:
             raise Exception(f"Error determining reaction phase: {e}")
+
+    # ! reaction types
+    def is_reversible(self, reaction_mode_symbol: str) -> bool:
+        """
+        Check if the reaction is reversible based on the reaction mode symbol.
+
+        Reaction Mode Symbols:
+        - `Reversible`: "<=>"
+        - `Irreversible`: "=>"
+        - `Equilibrium`: "="
+        """
+        try:
+            # SECTION: validate reaction mode symbol
+            if reaction_mode_symbol not in ("<=>", "=>", "="):
+                raise ValueError(
+                    f"Invalid reaction mode symbol: {reaction_mode_symbol}")
+
+            # SECTION: determine reversibility
+            return reaction_mode_symbol == "<=>"
+        except Exception as e:
+            raise Exception(f"Error checking reversibility: {e}")
+
+    def is_irreversible(self, reaction_mode_symbol: str) -> bool:
+        """
+        Check if the reaction is irreversible based on the reaction mode symbol.
+
+        Reaction Mode Symbols:
+        - `Reversible`: "<=>"
+        - `Irreversible`: "=>"
+        - `Equilibrium`: "="
+        """
+        try:
+            # SECTION: validate reaction mode symbol
+            if reaction_mode_symbol not in ("<=>", "=>", "="):
+                raise ValueError(
+                    f"Invalid reaction mode symbol: {reaction_mode_symbol}")
+
+            # SECTION: determine irreversibility
+            return reaction_mode_symbol in ("=>")
+        except Exception as e:
+            raise Exception(f"Error checking irreversibility: {e}")
+
+    def is_equilibrium(self, reaction_mode_symbol: str) -> bool:
+        """
+        Check if the reaction is at equilibrium based on the reaction mode symbol.
+
+        Reaction Mode Symbols:
+        - `Reversible`: "<=>"
+        - `Irreversible`: "=>"
+        - `Equilibrium`: "="
+        """
+        try:
+            # SECTION: validate reaction mode symbol
+            if reaction_mode_symbol not in ("<=>", "=>", "="):
+                raise ValueError(
+                    f"Invalid reaction mode symbol: {reaction_mode_symbol}")
+
+            # SECTION: determine equilibrium
+            return reaction_mode_symbol == "="
+        except Exception as e:
+            raise Exception(f"Error checking equilibrium: {e}")
+
+    def reaction_type(self, reaction_mode_symbol: str) -> str:
+        """
+        Determine the type of reaction based on the reaction mode symbol.
+
+        Reaction Mode Symbols:
+        - `Reversible`: "<=>"
+        - `Irreversible`: "=>"
+        - `Equilibrium`: "="
+        """
+        try:
+            # SECTION: validate reaction mode symbol
+            if reaction_mode_symbol not in ("<=>", "=>", "="):
+                raise ValueError(
+                    f"Invalid reaction mode symbol: {reaction_mode_symbol}")
+
+            # SECTION: determine reaction type
+            if self.is_reversible(reaction_mode_symbol):
+                return "Reversible"
+            elif self.is_irreversible(reaction_mode_symbol):
+                return "Irreversible"
+            elif self.is_equilibrium(reaction_mode_symbol):
+                return "Equilibrium"
+            else:
+                return "Unknown"
+        except Exception as e:
+            raise Exception(f"Error determining reaction type: {e}")
