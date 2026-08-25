@@ -151,3 +151,40 @@ For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gila
 ## 👨‍💻 Authors
 
 - [@sinagilassi](https://www.github.com/sinagilassi)
+
+## Reaction Network
+
+Use `ReactionNetwork` when you need structural analysis across multiple
+`Reaction` objects. The stoichiometric matrix is oriented as rows =
+components and columns = reactions, with negative reactant coefficients and
+positive product coefficients.
+
+```python
+from pyreactlab_core.models import Reaction, ReactionNetwork
+
+r1 = Reaction(
+    name="R1",
+    reaction="CO2(g) + 3H2(g) <=> CH3OH(g) + H2O(g)",
+)
+r2 = Reaction(
+    name="R2",
+    reaction="CO2(g) + H2(g) <=> CO(g) + H2O(g)",
+)
+r3 = Reaction(
+    name="R3",
+    reaction="CO(g) + 2H2(g) <=> CH3OH(g)",
+)
+
+network = ReactionNetwork(
+    name="methanol-synthesis",
+    reactions=[r1, r2, r3],
+)
+
+print(network.component_ids)
+print(network.stoichiometric_matrix)
+print(network.stoichiometric_rank)
+print(network.independent_reactions)
+print(network.dependent_reactions)
+print(network.reaction_dependencies)
+print(network.summary)
+```
