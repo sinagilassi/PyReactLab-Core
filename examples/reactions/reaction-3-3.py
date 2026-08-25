@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: aqueous neutralization reaction
 component_h_ion = Component(
     name="Hydrogen Ion",
-    formula="H",
+    formula="H{+}",
     state="aq"
 )
 component_oh_ion = Component(
     name="Hydroxide Ion",
-    formula="OH",
+    formula="OH{-}",
     state="aq"
 )
 component_h2o_l = Component(
