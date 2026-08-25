@@ -1,11 +1,16 @@
 # import libs
+import logging
 import re
 from typing import Dict, List, Optional, Any
-# locals
+# ! locals
 from ..models.reactions import Reactant, Product
 
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 # SECTION: ChemReactUtils class
+
+
 class ChemReactUtils:
     """General-purpose helpers for chemical reaction analysis."""
 
