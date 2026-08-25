@@ -11,6 +11,7 @@ from ..configs.constants import (
     ReactionMode,
 )
 from .chem_react_utils import ChemReactUtils
+from .chem_react_balance import ChemReactBalance
 from .reaction_component_mapper import ReactionComponentMapper
 from .reaction_network_analysis import ReactionNetworkAnalysis
 from ..models.reactions import Reactant, Product, PhaseRule
@@ -23,11 +24,12 @@ logger = logging.getLogger(__name__)
 # SECTION: ChemReact class
 class ChemReact(
     ChemReactUtils,
+    ChemReactBalance,
     ReactionComponentMapper,
     ReactionNetworkAnalysis,
 ):
     """
-    Chemical Reaction Utilities
+    Chemical Reaction
 
     The ChemReact class provides utilities for analyzing and processing chemical reactions in various phases and conditions. These reactions can be represented in different ways depending on the dominant factors influencing them:
 
@@ -419,6 +421,20 @@ class ChemReact(
                 reaction_stoichiometry=reaction_stoichiometry
             )
 
+            # SECTION: chemical balance analysis
+            chemical_balance = self.reaction_balance(
+                reactants=reactants,
+                products=products
+            )
+            # >> unpack
+            reactant_elements = chemical_balance["reactant_elements"]
+            product_elements = chemical_balance["product_elements"]
+            net_elements = chemical_balance["net_elements"]
+
+            is_element_balanced = chemical_balance["is_element_balanced"]
+            is_charge_balanced = chemical_balance["is_charge_balanced"]
+            is_balanced = chemical_balance["is_balanced"]
+
             # res
             res = {
                 'name': name,
@@ -451,6 +467,12 @@ class ChemReact(
                 'components': components,
                 'map_components': map_components,
                 'component_checker': self._component_checker,
+                'reactant_elements': reactant_elements,
+                'product_elements': product_elements,
+                'net_elements': net_elements,
+                'is_element_balanced': is_element_balanced,
+                'is_charge_balanced': is_charge_balanced,
+                'is_balanced': is_balanced,
             }
 
             return res
