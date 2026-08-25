@@ -40,6 +40,8 @@ PERIODIC_TABLE_ELEMENTS = [
     "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn",
     "Nh", "Fl", "Mc", "Lv", "Ts", "Og",
 ]
+# >> frozenset of periodic table elements
+PERIODIC_TABLE_ELEMENT_SET = frozenset(PERIODIC_TABLE_ELEMENTS)
 
 # SECTION: Reaction
 REACTION_SYMBOLIC_MODES = {
