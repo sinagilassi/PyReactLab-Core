@@ -14,6 +14,12 @@ from .configs.constants import (
     ReactionMode
 )
 
+# NOTE: models
+from .models import (
+    Reaction,
+    ReactionNetwork,
+)
+
 # NOTE: app
 from .app import (
     rxn,
@@ -33,6 +39,9 @@ __all__ = [
     # configs
     "REACTION_SYMBOLIC_MODES",
     "ReactionMode",
+    # models
+    "Reaction",
+    "ReactionNetwork",
     # app
     "rxn",
     "rxn_stoichiometry_matrix",
