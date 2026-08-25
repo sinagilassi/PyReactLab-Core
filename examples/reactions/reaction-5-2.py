@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: carbon subscript reaction
 component_ca_ion = Component(
     name="Calcium Ion",
-    formula="Ca",
+    formula="Ca{2+}",
     state="aq"
 )
 component_c2o4_ion = Component(
     name="Oxalate Ion",
-    formula="C2O4",
+    formula="C2O4{2-}",
     state="aq"
 )
 component_caC2o4 = Component(

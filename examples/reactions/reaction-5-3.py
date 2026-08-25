@@ -12,12 +12,12 @@ component_ch3cooh = Component(
 )
 component_h_ion = Component(
     name="Hydrogen Ion",
-    formula="H",
+    formula="H{+}",
     state="aq"
 )
 component_ch3coo_ion = Component(
     name="Acetate Ion",
-    formula="CH3COO",
+    formula="CH3COO{-}",
     state="aq"
 )
 

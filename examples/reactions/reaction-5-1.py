@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: polyatomic ions reaction
 component_ca_ion = Component(
     name="Calcium Ion",
-    formula="Ca",
+    formula="Ca{2+}",
     state="aq"
 )
 component_po4_ion = Component(
     name="Phosphate Ion",
-    formula="PO4",
+    formula="PO4{3-}",
     state="aq"
 )
 component_ca3_po4_2 = Component(
