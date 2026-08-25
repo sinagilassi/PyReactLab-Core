@@ -1,0 +1,75 @@
+# import libs
+from pyreactlab_core import rxn, rxn_stoichiometry_matrix, rxns_stoichiometry
+from rich import print
+
+
+# NOTE: define ionic reaction string
+reaction_1 = "Ag{+}(aq) + Cl{-}(aq) => AgCl(s)"
+name_1 = "Silver Chloride Precipitation"
+
+# second ionic reaction
+reaction_2 = "Ca{2+}(aq) + CO3{2-}(aq) => CaCO3(s)"
+name_2 = "Calcium Carbonate Precipitation"
+
+
+# NOTE: create reaction instance
+rxn_1 = rxn(
+    reaction_str=reaction_1,
+    name=name_1
+)
+# NOTE: display analysis results
+if rxn_1 is None:
+    raise ValueError("Failed to create Reaction instance.")
+
+rxn_2 = rxn(
+    reaction_str=reaction_2,
+    name=name_2
+)
+# NOTE: display analysis results
+if rxn_2 is None:
+    raise ValueError("Failed to create Reaction instance.")
+
+# SECTION: display reaction analysis results
+print(f"[bold green]Reaction Name:[/bold green] {rxn_1.name}")
+print(
+    f"[bold green]Symbolic Reaction:[/bold green] {rxn_1.symbolic_reaction}")
+print(f"[bold green]Reactants:[/bold green] {rxn_1.reactants}")
+print(f"[bold green]Products:[/bold green] {rxn_1.products}")
+print(
+    f"[bold green]Reaction Coefficients:[/bold green] {rxn_1.reaction_coefficients}")
+print(
+    f"[bold green]Reaction Stoichiometry:[/bold green] {rxn_1.reaction_stoichiometry}")
+print(
+    f"[bold green]Reaction Stoichiometry Matrix:[/bold green] {rxn_1.reaction_stoichiometry_matrix}")
+print(
+    f"[bold green]Charge Count:[/bold green] {rxn_1.charge_count}")
+print(
+    f"[bold green]Total Reactant Charge:[/bold green] {rxn_1.total_reactant_charge}")
+print(
+    f"[bold green]Total Product Charge:[/bold green] {rxn_1.total_product_charge}")
+print(
+    f"[bold green]Net Charge:[/bold green] {rxn_1.net_charge}")
+print(
+    f"[bold green]Reaction State:[/bold green] {rxn_1.reaction_state}")
+
+
+# SECTION: Get reaction stoichiometry matrix
+stoichiometry_result = rxn_stoichiometry_matrix(
+    reaction=rxn_1,
+)
+if stoichiometry_result is None:
+    raise ValueError("Failed to retrieve reaction stoichiometry matrix.")
+print(
+    f"[bold blue]Stoichiometry Matrix from rxn_stoichiometry():[/bold blue] ")
+print(stoichiometry_result)
+
+# SECTION: Get stoichiometry matrices for multiple reactions
+reactions_list = [rxn_1, rxn_2]
+stoichiometry_matrices = rxns_stoichiometry(
+    reactions=reactions_list,
+)
+if stoichiometry_matrices is None:
+    raise ValueError(
+        "Failed to retrieve stoichiometry matrices for reactions.")
+
+print(stoichiometry_matrices)
