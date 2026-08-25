@@ -182,7 +182,7 @@ class ChemReact(
             reactants: List[Reactant] = [
                 {
                     'coefficient': float(r[0]) if r[0] else float(1),
-                    'molecule': r[1],
+                    'molecule': self.parse_molecule(r[1], r[2]),
                     'charge': self.parse_charge(r[2]),
                     'state': r[3] if r[3] else phase_set,
                     'molecule_state': ''
@@ -217,7 +217,7 @@ class ChemReact(
             products: List[Product] = [
                 {
                     'coefficient': float(p[0]) if p[0] else float(1),
-                    'molecule': p[1],
+                    'molecule': self.parse_molecule(p[1], p[2]),
                     'charge': self.parse_charge(p[2]),
                     'state': p[3] if p[3] else phase_set,
                     'molecule_state': ''

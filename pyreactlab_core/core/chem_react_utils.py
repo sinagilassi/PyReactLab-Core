@@ -1,6 +1,6 @@
 # import libs
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 # locals
 from ..models.reactions import Reactant, Product
 
@@ -24,7 +24,35 @@ class ChemReactUtils:
         if available_phases is not None:
             self.available_phases = available_phases
 
-    # ::: count carbon
+    # ! ::: parse molecule
+    def parse_molecule(
+        self,
+        id: str,
+        charge: Any
+    ) -> str:
+        """
+        Parse molecule Id and charge to a formatted string. Charge is optional and will be appended using {+} or {-} notation if provided.
+        """
+        try:
+            # SECTION: format molecule string
+            # NOTE: parse charge to ensure it is in the correct format
+            charge = self.parse_charge(charge)
+
+            # >> check if charge is non-zero, append it to the molecule Id
+            if charge == 1:
+                return f"{id}{{+}}"
+            elif charge == -1:
+                return f"{id}{{-}}"
+            elif charge != 0:
+                return f"{id}{{{charge}}}"
+            else:
+                return id
+        except Exception as e:
+            raise Exception(
+                f"Error parsing molecule '{id}' with charge '{charge}': {e}"
+            )
+
+    # ! ::: count carbon
     def count_carbon(self, molecule: str, coefficient: float) -> float:
         """
         Count the total number of carbon atoms in a molecule,
@@ -65,7 +93,7 @@ class ChemReactUtils:
             raise Exception(
                 f"Error counting carbon in molecule '{molecule}': {e}")
 
-    # ::: count total carbon
+    # ! ::: count total carbon
     def count_total_carbon(
         self,
         reactants: List[Reactant],
@@ -96,8 +124,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error counting total carbon in reaction: {e}")
 
-    # :::phase rule analysis
-
+    # ! :::phase rule analysis
     def phase_rule_analysis(self, phase_rule: Optional[str] = None) -> str:
         """
         Analyze the phase rule of a reaction.
@@ -131,6 +158,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error analyzing phase rule: {e}")
 
+    # ! ::: state name set
     def state_name_set(self, state_set: set) -> List[str]:
         """
         Convert state set to full names.
@@ -150,6 +178,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error converting state set to full names: {e}")
 
+    # ! ::: determine reaction phase
     def determine_reaction_phase(self, reaction_dict: Dict[str, str]) -> str:
         """
         Determine the phase of a reaction based on component states.
@@ -170,6 +199,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error determining reaction phase: {e}")
 
+    # ! ::: count reaction states
     def count_reaction_states(self, reaction_dict: Dict[str, str]) -> Dict[str, int]:
         """
         Count the number of component states in a reaction.
@@ -196,8 +226,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error determining reaction phase: {e}")
 
-    # ! reaction types
-
+    # ! ::: reaction types
     def get_reaction_type(self, reaction_mode_symbol: str) -> str:
         """
         Determine the type of reaction based on the reaction mode symbol.
@@ -226,7 +255,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error determining reaction type: {e}")
 
-    # ! count charge
+    # ! ::: parse charge
     def parse_charge(self, charge: str) -> int:
         """
         Convert reaction charge notation to an integer charge.
@@ -253,6 +282,7 @@ class ChemReactUtils:
         except Exception as e:
             raise Exception(f"Error parsing charge '{charge}': {e}")
 
+    # ! ::: count charge
     def count_charge(
         self,
         molecule: str,
@@ -278,7 +308,7 @@ class ChemReactUtils:
             raise Exception(
                 f"Error counting charge in molecule '{molecule}': {e}")
 
-    # ! count total charge in reaction
+    # ! ::: count total charge in reaction
     def count_total_charge(
         self,
         reactants: List[Reactant],
