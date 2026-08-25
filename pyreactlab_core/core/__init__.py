@@ -11,6 +11,9 @@ from .chem_react_utils import ChemReactUtils
 from .reaction_component_mapper import ReactionComponentMapper
 from .reaction_network_analysis import ReactionNetworkAnalysis
 
+# NOTE: main
+from .main import parse_elemental_composition
+
 __all__ = [
     "ReactionMode",
     "PhaseRule",
@@ -20,4 +23,5 @@ __all__ = [
     "ChemReactUtils",
     "ReactionComponentMapper",
     "ReactionNetworkAnalysis",
+    "parse_elemental_composition",
 ]
