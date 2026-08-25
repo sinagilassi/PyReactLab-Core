@@ -260,3 +260,33 @@ class Reaction(BaseModel):
     @property
     def map_components(self) -> Dict[str, Component]:
         return self.analysis.get("map_components", {})
+
+    @computed_field
+    @property
+    def reactant_elements(self) -> Dict[str, int]:
+        return self.analysis.get("reactant_elements", {})
+
+    @computed_field
+    @property
+    def product_elements(self) -> Dict[str, int]:
+        return self.analysis.get("product_elements", {})
+
+    @computed_field
+    @property
+    def net_elements(self) -> Dict[str, int]:
+        return self.analysis.get("net_elements", {})
+
+    @computed_field
+    @property
+    def is_element_balanced(self) -> bool:
+        return self.analysis.get("is_element_balanced", False)
+
+    @computed_field
+    @property
+    def is_charge_balanced(self) -> bool:
+        return self.analysis.get("is_charge_balanced", False)
+
+    @computed_field
+    @property
+    def is_balanced(self) -> bool:
+        return self.analysis.get("is_balanced", False)
