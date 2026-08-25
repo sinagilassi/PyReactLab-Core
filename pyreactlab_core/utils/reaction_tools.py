@@ -1,7 +1,6 @@
 # import libs
 import logging
 from typing import cast, NamedTuple
-from rich import print
 # locals
 from ..configs.constants import (
     ReactionMode,
@@ -9,7 +8,6 @@ from ..configs.constants import (
     ReactionType,
     REACTION_SYMBOLIC_MODES,
 )
-
 
 # NOTE: logger
 logger = logging.getLogger(__name__)

@@ -1,6 +1,5 @@
 # import libs
-import logging
-from typing import Dict, Any, List, Optional, Literal
+from typing import List
 from pythermodb_settings.models import Component, ComponentKey
 from pythermodb_settings.utils import set_component_id
 
