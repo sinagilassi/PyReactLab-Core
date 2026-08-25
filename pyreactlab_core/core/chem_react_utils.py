@@ -43,8 +43,12 @@ class ChemReactUtils:
                 return f"{id}{{+}}"
             elif charge == -1:
                 return f"{id}{{-}}"
-            elif charge != 0:
-                return f"{id}{{{charge}}}"
+            elif charge > 0:
+                return f"{id}{{{charge}+}}"
+            elif charge < 0:
+                return f"{id}{{{abs(charge)}-}}"
+            elif charge == 0:
+                return id
             else:
                 return id
         except Exception as e:
