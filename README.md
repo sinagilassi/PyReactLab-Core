@@ -136,23 +136,7 @@ print(stoichiometry_matrices)
 # }
 ```
 
-## 🤝 Contributing
-
-Contributions are highly welcome — bug fixes, new calculation routines, mixture models, extended unit tests, documentation, etc.
-
-## 📝 License
-
-This project is distributed under the Apache License, Version 2.0, which grants you broad freedom to use, modify, and integrate the software into your own applications or projects, provided that you comply with the conditions outlined in the license. Although Apache 2.0 does not require users to retain explicit author credit beyond standard copyright and license notices, I kindly request that if you incorporate this work into your own software, you acknowledge Sina Gilassi as the original author. Referencing the original repository or documentation is appreciated, as it helps recognize the effort invested in developing and maintaining this project.
-
-## ❓ FAQ
-
-For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/)
-
-## 👨‍💻 Authors
-
-- [@sinagilassi](https://www.github.com/sinagilassi)
-
-## Reaction Network
+### Reaction Network
 
 Use `ReactionNetwork` when you need structural analysis across multiple
 `Reaction` objects. The stoichiometric matrix is oriented as rows =
@@ -188,3 +172,20 @@ print(network.dependent_reactions)
 print(network.reaction_dependencies)
 print(network.summary)
 ```
+
+## 🤝 Contributing
+
+Contributions are highly welcome — bug fixes, new calculation routines, mixture models, extended unit tests, documentation, etc.
+
+## 📝 License
+
+This project is distributed under the Apache License, Version 2.0, which grants you broad freedom to use, modify, and integrate the software into your own applications or projects, provided that you comply with the conditions outlined in the license. Although Apache 2.0 does not require users to retain explicit author credit beyond standard copyright and license notices, I kindly request that if you incorporate this work into your own software, you acknowledge Sina Gilassi as the original author. Referencing the original repository or documentation is appreciated, as it helps recognize the effort invested in developing and maintaining this project.
+
+## ❓ FAQ
+
+For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/)
+
+## 👨‍💻 Authors
+
+- [@sinagilassi](https://www.github.com/sinagilassi)
+
