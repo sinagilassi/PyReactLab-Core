@@ -12,12 +12,12 @@ component_zn_s = Component(
 )
 component_cu_ion = Component(
     name="Copper(II) Ion",
-    formula="Cu",
+    formula="Cu{2+}",
     state="aq"
 )
 component_zn_ion = Component(
     name="Zinc Ion",
-    formula="Zn",
+    formula="Zn{2+}",
     state="aq"
 )
 component_cu_s = Component(
