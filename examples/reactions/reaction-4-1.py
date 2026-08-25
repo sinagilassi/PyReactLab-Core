@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: precipitation reaction
 component_ag_ion = Component(
     name="Silver Ion",
-    formula="Ag",
+    formula="Ag{+}",
     state="aq"
 )
 component_cl_ion = Component(
     name="Chloride Ion",
-    formula="Cl",
+    formula="Cl{-}",
     state="aq"
 )
 component_agcl = Component(

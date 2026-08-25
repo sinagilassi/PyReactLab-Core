@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: trivalent ion reaction
 component_fe3_ion = Component(
     name="Iron(III) Ion",
-    formula="Fe",
+    formula="Fe{3+}",
     state="aq"
 )
 component_oh_ion = Component(
     name="Hydroxide Ion",
-    formula="OH",
+    formula="OH{-}",
     state="aq"
 )
 component_fe_oh_3 = Component(

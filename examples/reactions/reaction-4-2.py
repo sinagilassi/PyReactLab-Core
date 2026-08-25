@@ -7,12 +7,12 @@ from pythermodb_settings.models import Component
 # NOTE: divalent ions reaction
 component_ca_ion = Component(
     name="Calcium Ion",
-    formula="Ca",
+    formula="Ca{2+}",
     state="aq"
 )
 component_co3_ion = Component(
     name="Carbonate Ion",
-    formula="CO3",
+    formula="CO3{2-}",
     state="aq"
 )
 component_caco3 = Component(
