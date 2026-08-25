@@ -44,12 +44,14 @@ def _lcmm(nums: Iterable[int]) -> int:
 
 _CHARGE_CURLY_RE = re.compile(r"^(.*)\{([0-9]*)([+-])\}$")  # Fe{3+}, SO4{2-}
 _CHARGE_CARET_RE = re.compile(r"^(.*)\^([0-9]*)([+-])$")   # SO4^2-
-_CHARGE_TRAIL_RE = re.compile(r"^(.*?)([0-9]*)([+-])$")    # Fe2+, NH4+
+_CHARGE_TRAIL_RE = re.compile(r"^(.+?)([+-])$")            # NH4+, Cl-
+_LEADING_COEFF_RE = re.compile(r"^\s*(\d+)(?=[A-Z\[\(])")
 
 
 def _normalize_token(tok: str) -> str:
     tok = tok.strip()
     tok = tok.replace("·", "*").replace(".", "*")  # hydrate dot to '*'
+    tok = tok.replace("−", "-")
     if tok in ("e", "e-", "e⁻"):
         return "e-"
     return tok
@@ -77,14 +79,14 @@ def _parse_charge(token: str) -> Tuple[str, int]:
         n = int(num) if num else 1
         return base, (n if sign == "+" else -n)
 
-    # trailing charge (ambiguous with separator '+', so prefer brace style in your UI)
+    # Trailing charge is limited to +/-1. Use brace or caret notation for
+    # larger charges, e.g. Fe{2+} or Fe^2+, to avoid confusing NH4+ with +4.
     if t.endswith(("+", "-")):
         m = _CHARGE_TRAIL_RE.match(t)
         if m:
-            base, num, sign = m.group(1), m.group(2), m.group(3)
+            base, sign = m.group(1), m.group(2)
             if base:
-                n = int(num) if num else 1
-                return base, (n if sign == "+" else -n)
+                return base, (1 if sign == "+" else -1)
 
     return t, 0
 
@@ -98,7 +100,7 @@ def _smart_split_plus(side: str) -> List[str]:
     buf: List[str] = []
     brace_depth = 0
 
-    for ch in side:
+    for idx, ch in enumerate(side):
         if ch == "{":
             brace_depth += 1
             buf.append(ch)
@@ -106,6 +108,24 @@ def _smart_split_plus(side: str) -> List[str]:
             brace_depth = max(0, brace_depth - 1)
             buf.append(ch)
         elif ch == "+" and brace_depth == 0:
+            prev_is_space = idx > 0 and side[idx - 1].isspace()
+            next_is_space = idx + 1 < len(side) and side[idx + 1].isspace()
+            next_nonspace = None
+            for nxt in side[idx + 1:]:
+                if not nxt.isspace():
+                    next_nonspace = nxt
+                    break
+
+            if not prev_is_space and next_nonspace == "+":
+                buf.append(ch)
+                continue
+
+            if not (prev_is_space and next_is_space) and not (
+                not prev_is_space and next_nonspace and next_nonspace.isupper()
+            ):
+                buf.append(ch)
+                continue
+
             token = "".join(buf).strip()
             if token:
                 out.append(token)
@@ -220,6 +240,10 @@ def _parse_atoms_single(formula: str) -> Dict[str, int]:
     return stack[0]
 
 
+def _strip_leading_coefficient(token: str) -> str:
+    return _LEADING_COEFF_RE.sub("", token, count=1).strip()
+
+
 @dataclass(frozen=True)
 class Species:
     raw: str
@@ -254,7 +278,7 @@ def _is_electron_token(tok: str) -> bool:
 
 
 def parse_species(token: str) -> Species:
-    tok = _normalize_token(token)
+    tok = _normalize_token(_strip_leading_coefficient(token))
 
     if _is_electron_token(tok):
         return Species(
@@ -371,6 +395,61 @@ def _fraction_vec_to_small_int(v: List[Fraction]) -> List[int]:
     return ints
 
 
+def _small_ints_from_basis(
+    basis: List[List[Fraction]],
+    required_nonzero: int | None = None,
+    required_indices: List[int] | None = None,
+    search_limit: int = 8,
+) -> List[int]:
+    """
+    Pick a small same-sign nullspace vector that uses every original species.
+    Single basis vectors can represent valid sub-reactions in underdetermined
+    systems, so try small integer combinations before accepting a result.
+    """
+    if not basis:
+        return []
+    if required_indices is None:
+        required_indices = list(range(required_nonzero or 0))
+
+    def valid(ints: List[int]) -> bool:
+        if any(ints[i] == 0 for i in required_indices):
+            return False
+        return all(c > 0 for c in ints) or all(c < 0 for c in ints)
+
+    candidates: List[List[int]] = []
+    dims = len(basis)
+
+    def visit(idx: int, coeffs: List[int]) -> None:
+        if idx == dims:
+            if all(c == 0 for c in coeffs):
+                return
+            vec = [Fraction(0, 1) for _ in basis[0]]
+            for scale, base in zip(coeffs, basis):
+                if scale == 0:
+                    continue
+                for i, value in enumerate(base):
+                    vec[i] += scale * value
+            ints = _fraction_vec_to_small_int(vec)
+            if valid(ints):
+                candidates.append(ints)
+            return
+
+        for scale in range(-search_limit, search_limit + 1):
+            visit(idx + 1, coeffs + [scale])
+
+    visit(0, [])
+
+    if not candidates:
+        raise ValueError(
+            "No balance using all species was found. Equation may be underdetermined or impossible to balance."
+        )
+
+    return min(
+        candidates,
+        key=lambda ints: (sum(abs(x) for x in ints), max(abs(x) for x in ints)),
+    )
+
+
 # ---------------------------
 # Matrix + formatting
 # ---------------------------
@@ -452,9 +531,10 @@ def balance_algebraic(equation: str, include_charge: str = "auto") -> str:
         raise ValueError(
             "No non-trivial solution found. Equation may be impossible to balance.")
 
-    # choose simplest integer basis vector
-    candidates = [_fraction_vec_to_small_int(v) for v in basis]
-    best = min(candidates, key=lambda ints: sum(abs(x) for x in ints))
+    best = _small_ints_from_basis(
+        basis,
+        required_nonzero=len(reactants) + len(products),
+    )
 
     nL = len(reactants)
     lhs = [(best[i], reactants[i]) for i in range(nL) if best[i] != 0]
@@ -566,6 +646,11 @@ def balance_half_reaction(equation: str, medium: str = "auto") -> str:
             md = "acid"  # default for ionic redox if no hint
         medium = md
 
+    try:
+        return balance_algebraic(equation, include_charge="auto")
+    except ValueError:
+        pass
+
     if medium == "acid":
         helpers = ["H2O", "H{+}", "e-"]
     else:
@@ -582,18 +667,30 @@ def balance_half_reaction(equation: str, medium: str = "auto") -> str:
     if not basis:
         return balance_algebraic(equation, include_charge="auto")
 
+    required_indices = list(range(len(base_left))) + list(
+        range(len(reactants), len(reactants) + len(products))
+    )
+
     # choose simplest, but also prefer smaller helper usage
     helper_idxs = list(range(len(base_left), len(base_left) + len(add_left)))
 
     best_ints = None
     best_score = None
-    for v in basis:
-        ints = _fraction_vec_to_small_int(v)
+    for limit in range(1, 9):
+        try:
+            ints = _small_ints_from_basis(
+                basis,
+                required_indices=required_indices,
+                search_limit=limit,
+            )
+        except ValueError:
+            continue
         score = sum(abs(x) for x in ints) + 3 * \
             sum(abs(ints[i]) for i in helper_idxs)
         if best_score is None or score < best_score:
             best_score = score
             best_ints = ints
+        break
 
     if best_ints is None:
         return balance_algebraic(equation, include_charge="auto")
@@ -682,9 +779,20 @@ def balance(
         # normalize method
         m = method.lower().strip()
         # >> check
-        if m not in ("algebraic", "half", "oxidation"):
+        valid_methods = (
+            "algebraic",
+            "matrix",
+            "half",
+            "half-reaction",
+            "ion",
+            "ion-electron",
+            "oxidation",
+            "oxidation-number",
+            "ox",
+        )
+        if m not in valid_methods:
             logger.error(
-                "Invalid method specified, method must be: algebraic | half | oxidation")
+                "Invalid method specified, method must be: algebraic | matrix | half | half-reaction | ion | ion-electron | oxidation | oxidation-number | ox")
             return None
 
         # medium check
