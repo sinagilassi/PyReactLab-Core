@@ -28,7 +28,7 @@ class Reaction(BaseModel):
     analysis : Dict[str, Any]
         A dictionary containing the analysis results of the reaction.
     component_keys : List[ComponentKey]
-        The key used to identify components in the reaction analysis, with a default value of ["Formula-State", "Name-State", "Name-Formula-State"].
+        The key used to identify components in the reaction analysis, with a default value of ["Formula-State", "Name-State", "Name-Formula", "Name-Formula-State"].
 
     Properties
     ----------
@@ -86,6 +86,7 @@ class Reaction(BaseModel):
         default_factory=lambda: [
             "Formula-State",
             "Name-State",
+            "Name-Formula",
             "Name-Formula-State",
         ],
         description="The key used to identify components in the reaction analysis."
