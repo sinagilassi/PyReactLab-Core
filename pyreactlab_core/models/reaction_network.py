@@ -154,6 +154,17 @@ class ReactionNetwork(BaseModel):
 
     @computed_field
     @property
+    def stoichiometric_matrix_dict(self) -> dict[str, list[float]]:
+        return {
+            component_id: row
+            for component_id, row in zip(
+                self.component_ids,
+                self.stoichiometric_matrix,
+            )
+        }
+
+    @computed_field
+    @property
     def stoichiometric_matrix_shape(self) -> tuple[int, int]:
         return (self.component_count, self.reaction_count)
 
