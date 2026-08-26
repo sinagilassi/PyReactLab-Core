@@ -12,7 +12,7 @@ from .reaction_component_mapper import ReactionComponentMapper
 from .reaction_network_analysis import ReactionNetworkAnalysis
 
 # NOTE: main
-from .main import parse_elemental_composition
+from .main import parse_elemental_composition, parse_ionic_charge
 
 __all__ = [
     "ReactionMode",
@@ -24,4 +24,5 @@ __all__ = [
     "ReactionComponentMapper",
     "ReactionNetworkAnalysis",
     "parse_elemental_composition",
+    "parse_ionic_charge",
 ]
