@@ -14,7 +14,14 @@
 - **🔬 Reaction Analysis**: Analyze reaction properties and behaviors.
 - **🧩 Extensible Design**: Built to be extended by other PyReactLab modules.
 
-## 📦 Installation
+## � Documentation pages
+
+- [Documentation Home](docs.md)
+- [Models Overview](models.md)
+- [Reaction Model](reaction.md)
+- [Reaction Network Model](reaction_network.md)
+
+## �📦 Installation
 
 You can install PyReactLab-Core via pip:
 
