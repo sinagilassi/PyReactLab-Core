@@ -1,6 +1,6 @@
 # import libs
 from rich import print
-from pyreactlab_core.core import parse_elemental_composition
+from pyreactlab_core.core import parse_elemental_composition, parse_ionic_charge
 
 # NOTE: Examples of parsing elemental composition
 
@@ -20,5 +20,14 @@ for compound in compounds:
     print("Compound:")
     print(f"  {compound}")
     print("Elemental Composition:")
+    print(f"  {res_}")
+    print("-" * 40)
+
+# SECTION: Parse ionic charge for each compound
+for compound in compounds:
+    res_ = parse_ionic_charge(compound)
+    print("Compound:")
+    print(f"  {compound}")
+    print("Ionic Charge:")
     print(f"  {res_}")
     print("-" * 40)
