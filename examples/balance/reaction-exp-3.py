@@ -5,12 +5,12 @@ from rich import print
 
 reaction_1 = Reaction(
     name="Combustion of Methane",
-    reaction="CO2(g) + H2(g) => 3CH3OH(g) + H2O(g)"
+    reaction="100CO2(g) + H2(g) => 3CH3OH(g) + H2O(g)"
 )
 
 reaction_2 = Reaction(
     name="Combustion of Ethanol",
-    reaction="C2H5OH(l) + O2(g) => CO2(g) + H2O(g)"
+    reaction="C2H5OH(l) + O2(g) <=> CO2(g) + H2O(g)"
 )
 
 # "KMnO4 + HCl = KCl + MnCl2 + H2O + Cl2"
@@ -40,7 +40,7 @@ tests = [
 ]
 
 for eq in tests:
-    print("IN :", eq)
+    print("IN :", eq.reaction)
     print("ALG:", balance(eq, "algebraic"))
     print("HAL:", balance(eq, "half", medium="auto"))
     print("OX :", balance(eq, "oxidation"))
