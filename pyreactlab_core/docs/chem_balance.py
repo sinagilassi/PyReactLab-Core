@@ -9,6 +9,7 @@ from fractions import Fraction
 from typing import Dict, List, Tuple, Iterable, Optional
 import numpy as np
 # local
+from ..configs.constants import ALL_REACTION_MODE_SYMBOLS
 from ..models.reaction import Reaction
 
 # NOTE: setup logging
@@ -156,7 +157,20 @@ def _split_equation_v0(eq: str) -> Tuple[List[str], List[str]]:
     return left_parts, right_parts
 
 
-ARROW_RE = re.compile(r"\s*(<=>|=>|->|=)\s*")
+_ARROW_PATTERN = "|".join(
+    re.escape(symbol)
+    for symbol in sorted(ALL_REACTION_MODE_SYMBOLS, key=len, reverse=True)
+)
+ARROW_RE = re.compile(rf"\s*({_ARROW_PATTERN})\s*")
+_ARROW_MESSAGE = ", ".join(ALL_REACTION_MODE_SYMBOLS)
+
+
+def _reaction_operator(reaction: str) -> str:
+    m = ARROW_RE.search(reaction)
+    if not m:
+        raise ValueError(
+            f"No reaction operator found. Expected one of: {_ARROW_MESSAGE}")
+    return m.group(1)
 
 
 def _split_equation(reaction: str) -> Tuple[List[str], List[str]]:
@@ -166,9 +180,8 @@ def _split_equation(reaction: str) -> Tuple[List[str], List[str]]:
     m = ARROW_RE.search(reaction)
     if not m:
         raise ValueError(
-            "No reaction operator found. Expected one of: <=>, =>, ->, =")
+            f"No reaction operator found. Expected one of: {_ARROW_MESSAGE}")
 
-    op = m.group(1)
     left = reaction[:m.start()]
     right = reaction[m.end():]
 
@@ -486,8 +499,12 @@ def _format_side(items: List[Tuple[int, Species]]) -> str:
     return " + ".join(parts) if parts else "0"
 
 
-def _format_equation(lhs: List[Tuple[int, Species]], rhs: List[Tuple[int, Species]]) -> str:
-    return f"{_format_side(lhs)} -> {_format_side(rhs)}"
+def _format_equation(
+    lhs: List[Tuple[int, Species]],
+    rhs: List[Tuple[int, Species]],
+    operator: str = "->",
+) -> str:
+    return f"{_format_side(lhs)} {operator} {_format_side(rhs)}"
 
 
 def _cancel_both_sides(
@@ -511,6 +528,7 @@ def _cancel_both_sides(
 # ---------------------------
 
 def balance_algebraic(equation: str, include_charge: str = "auto") -> str:
+    operator = _reaction_operator(equation)
     left_tokens, right_tokens = _split_equation(equation)
     reactants = [parse_species(t) for t in left_tokens]
     products = [parse_species(t) for t in right_tokens]
@@ -555,7 +573,7 @@ def balance_algebraic(equation: str, include_charge: str = "auto") -> str:
         lhs = [(c // g, sp) for c, sp in lhs]
         rhs = [(c // g, sp) for c, sp in rhs]
 
-    return _format_equation(lhs, rhs)
+    return _format_equation(lhs, rhs, operator)
 
 
 # ---------------------------
@@ -627,6 +645,7 @@ def balance_half_reaction(equation: str, medium: str = "auto") -> str:
       - moves negative coefficients across, cancels both sides, normalizes
       - falls back to algebraic for non-ionic reactions
     """
+    operator = _reaction_operator(equation)
     left_tokens, right_tokens = _split_equation(equation)
     base_left = [_normalize_token(t) for t in left_tokens]
     base_right = [_normalize_token(t) for t in right_tokens]
@@ -728,7 +747,7 @@ def balance_half_reaction(equation: str, medium: str = "auto") -> str:
         lhs = [(c // g, sp) for c, sp in lhs]
         rhs = [(c // g, sp) for c, sp in rhs]
 
-    return _format_equation(lhs, rhs)
+    return _format_equation(lhs, rhs, operator)
 
 # ---------------------------
 # check reaction format
@@ -805,7 +824,7 @@ def balance(
 
         # SECTION: Reaction object extraction
         if isinstance(equation, Reaction):
-            equation = equation.symbolic_unbalanced_reaction
+            equation = equation.reaction
 
         # NOTE: empty check
         if not equation or not equation.strip():
