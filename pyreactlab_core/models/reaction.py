@@ -23,6 +23,8 @@ class Reaction(BaseModel):
         The name of the reaction.
     reaction : str
         The chemical reaction equation as a string.
+    balance_reaction : bool
+        If True, automatically balance the reaction string before analysis.
     reaction_mode_symbol : Optional[ReactionMode]
         The symbol used to separate reactants and products in a reaction equation.
     analysis : Dict[str, Any]
@@ -70,6 +72,10 @@ class Reaction(BaseModel):
     """
     name: str
     reaction: str
+    balance_reaction: bool = Field(
+        default=False,
+        description="If True, automatically balance the reaction string before analysis."
+    )
     components: Optional[List[Component]] = Field(
         default=None,
         description="A list of Component objects involved in the reaction."
@@ -114,6 +120,16 @@ class Reaction(BaseModel):
 
         # NOTE: normalize reaction string
         self.reaction = normalize_reaction_expression(self.reaction)
+
+        if self.balance_reaction:
+            from ..docs.chem_balance import balance
+
+            balanced_reaction = balance(self.reaction)
+            if not balanced_reaction:
+                raise ValueError(
+                    f"Unable to balance reaction: {self.reaction}"
+                )
+            self.reaction = normalize_reaction_expression(balanced_reaction)
 
         # NOTE: perform analysis
         self.analysis = util.analyze_reaction(
