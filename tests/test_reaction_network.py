@@ -14,6 +14,38 @@ def make_network(name: str, reactions: list[tuple[str, str]]) -> ReactionNetwork
     )
 
 
+def test_network_does_not_auto_balance_reactions_by_default():
+    network = ReactionNetwork(
+        name="unbalanced-network",
+        reactions=[
+            Reaction(
+                name="R1",
+                reaction="H2(g) + O2(g) => H2O(g)",
+            )
+        ],
+    )
+
+    assert network.reactions[0].reaction == "H2(g) + O2(g) => H2O(g)"
+    assert network.is_balanced is False
+
+
+def test_network_can_auto_balance_reactions_before_analysis():
+    network = ReactionNetwork(
+        name="balanced-network",
+        reactions=[
+            Reaction(
+                name="R1",
+                reaction="H2(g) + O2(g) => H2O(g)",
+            )
+        ],
+        balance_reaction=True,
+    )
+
+    assert network.reactions[0].reaction == "2 H2(g) + O2(g) => 2 H2O(g)"
+    assert network.stoichiometric_matrix == [[-2.0], [-1.0], [2.0]]
+    assert network.is_balanced is True
+
+
 def test_sequential_network_species_roles_and_rank():
     network = make_network(
         "sequential",
