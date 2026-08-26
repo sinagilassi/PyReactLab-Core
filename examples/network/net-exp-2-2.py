@@ -1,12 +1,11 @@
 # import libs
+from rich import print
+from pyreactlab_core.models import Reaction, ReactionNetwork
+from pythermodb_settings.models import Component
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
-from pythermodb_settings.models import Component
-from pyreactlab_core.models import Reaction, ReactionNetwork
-from rich import print
 
 
 # SECTION: define components
@@ -92,9 +91,9 @@ reaction_3 = Reaction(
 )
 
 
-# SECTION: build reaction network
-network = ReactionNetwork(
-    name="methanol-synthesis-network",
+# SECTION: build reaction networks
+network_default = ReactionNetwork(
+    name="methanol-synthesis-network-default",
     reactions=[
         reaction_1,
         reaction_2,
@@ -102,57 +101,49 @@ network = ReactionNetwork(
     ],
 )
 
+network_reordered = ReactionNetwork(
+    name="methanol-synthesis-network",
+    reactions=[
+        reaction_1,
+        reaction_2,
+        reaction_3,
+    ],
+    components=reordered_components,
+)
 
-# SECTION: display network identity and stoichiometry
+
+# SECTION: compare default and configured component order
 print("Methanol Synthesis Network:")
-print(f"  reaction_ids: {network.reaction_ids}")
-print(f"  component_ids: {network.component_ids}")
+print(f"  reaction_ids: {network_default.reaction_ids}")
 print(
     f"  configured_components: {[f'{item.formula}-{item.state}' for item in components]}")
+print(
+    "  reordered_components: "
+    f"{[f'{item.formula}-{item.state}' for item in reordered_components]}"
+)
+
+print("Default Network (components=None):")
+print(f"  component_ids: {network_default.component_ids}")
 print("  stoichiometric_matrix:")
-for component_id, row in zip(network.component_ids, network.stoichiometric_matrix):
+for component_id, row in zip(
+    network_default.component_ids,
+    network_default.stoichiometric_matrix,
+):
     print(f"    {component_id}: {row}")
-
+print("  stoichiometric_matrix_dict:")
+print(network_default.stoichiometric_matrix_dict)
 print(" stoichiometric_matrix:")
-print(network.stoichiometric_matrix)
+print(network_default.stoichiometric_matrix)
 
-print(" stoichiometric_matrix_dict:")
-print(network.stoichiometric_matrix_dict)
-
-print(" reordered_components:")
-print([f"{item.formula}-{item.state}" for item in reordered_components])
-
-print(" stoichiometric_matrix_by_components:")
-print(network.stoichiometric_matrix_by_components(reordered_components))
-
-print(" stoichiometric_matrix_dict_by_components:")
-print(network.stoichiometric_matrix_dict_by_components(reordered_components))
-
-# SECTION: display dependency analysis
-# NOTE: The result should show R3 = R1 - R2.
-print("Dependency Analysis:")
-print(f"  stoichiometric_rank: {network.stoichiometric_rank}")
-print(f"  independent_reactions: {network.independent_reactions}")
-print(f"  dependent_reactions: {network.dependent_reactions}")
-print(f"  reaction_dependencies: {network.reaction_dependencies}")
-
-
-# SECTION: display structural maps
-print("Structural Maps:")
-print(f"  reaction_component_map: {network.reaction_component_map}")
-print(f"  component_reaction_map: {network.component_reaction_map}")
-print(f"  participation_matrix: {network.participation_matrix}")
-
-
-# SECTION: display phase and balance data
-print("Phase and Balance:")
-print(f"  phases: {network.phases}")
-print(f"  components_by_phase: {network.components_by_phase}")
-print(f"  is_element_balanced: {network.is_element_balanced}")
-print(f"  is_charge_balanced: {network.is_charge_balanced}")
-print(f"  is_balanced: {network.is_balanced}")
-
-
-# SECTION: display summary
-print("Summary:")
-print(network.summary)
+print("Configured Network (components=reordered_components):")
+print(f"  component_ids: {network_reordered.component_ids}")
+print("  stoichiometric_matrix:")
+for component_id, row in zip(
+    network_reordered.component_ids,
+    network_reordered.stoichiometric_matrix,
+):
+    print(f"    {component_id}: {row}")
+print("  stoichiometric_matrix_dict:")
+print(network_reordered.stoichiometric_matrix_dict)
+print("  stoichiometric matrix:")
+print(network_reordered.stoichiometric_matrix)
