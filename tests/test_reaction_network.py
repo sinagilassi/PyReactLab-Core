@@ -85,6 +85,13 @@ def test_methanol_synthesis_network_structure():
         [1.0, 0.0, 1.0],
         [1.0, 1.0, 0.0],
     ]
+    assert network.stoichiometric_matrix_dict == {
+        "CO2-g": [-1.0, -1.0, 0.0],
+        "H2-g": [-3.0, -1.0, -2.0],
+        "CO-g": [0.0, 1.0, -1.0],
+        "CH3OH-g": [1.0, 0.0, 1.0],
+        "H2O-g": [1.0, 1.0, 0.0],
+    }
     assert network.stoichiometric_rank == 2
     assert network.dependent_reactions == ["R3"]
     assert network.reaction_mode_count == {
