@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 from pydantic import BaseModel, Field, computed_field, model_validator
@@ -53,6 +53,20 @@ class ReactionNetwork(BaseModel):
     The stoichiometric matrix uses rows = components/species and columns =
     reactions. Reactants are negative, products are positive, and absent
     species are zero.
+
+    Attributes
+    ----------
+    name : str
+        Name of the reaction network.
+    reactions : list[Reaction]
+        List of reactions included in the reaction network.
+    components : list[Component] | None
+        List of chemical components included in the reaction network, the order of which may affect the stoichiometric matrix.
+
+    Notes
+    -----
+    - The order of components in the `components` list can affect the structure of the stoichiometric matrix.
+    - The default component order is determined by component participated in reactions.
     """
 
     name: str
@@ -60,17 +74,30 @@ class ReactionNetwork(BaseModel):
         ...,
         description="Chemical reactions included in the reaction network.",
     )
+    components: Optional[list[Component]] = Field(
+        default=None,
+        description="Chemical components included in the reaction network.",
+    )
 
     @model_validator(mode="after")
     def _validate_network(self):
         if not self.reactions:
-            raise ValueError("ReactionNetwork must contain at least one reaction.")
+            raise ValueError(
+                "ReactionNetwork must contain at least one reaction.")
 
         seen: set[str] = set()
         for reaction in self.reactions:
             if reaction.name in seen:
-                raise ValueError(f"Duplicate reaction name detected: {reaction.name}")
+                raise ValueError(
+                    f"Duplicate reaction name detected: {reaction.name}")
             seen.add(reaction.name)
+
+        if self.components is not None:
+            if not self.components:
+                raise ValueError(
+                    "ReactionNetwork components must not be empty when provided."
+                )
+            self._component_ids_from_components(self.components)
 
         return self
 
@@ -86,7 +113,7 @@ class ReactionNetwork(BaseModel):
 
     @computed_field
     @property
-    def components(self) -> list[Any]:
+    def mapped_components(self) -> list[Any]:
         values: list[Any] = []
         seen: set[str] = set()
         for reaction in self.reactions:
@@ -99,7 +126,9 @@ class ReactionNetwork(BaseModel):
     @computed_field
     @property
     def component_ids(self) -> list[str]:
-        return all_species(self.reactions)
+        if self.components is None:
+            return all_species(self.reactions)
+        return self._component_ids_from_components(self.components)
 
     @computed_field
     @property
@@ -170,7 +199,8 @@ class ReactionNetwork(BaseModel):
         components: list[Component],
     ) -> list[str]:
         component_ids = [
-            set_component_id(component, "Formula-State")  # type: ignore[arg-type]
+            # type: ignore[arg-type]
+            set_component_id(component, "Formula-State")
             for component in components
         ]
 
@@ -183,7 +213,7 @@ class ReactionNetwork(BaseModel):
             duplicates = ", ".join(dict.fromkeys(duplicate_ids))
             raise ValueError(f"Duplicate component IDs detected: {duplicates}")
 
-        network_component_ids = set(self.component_ids)
+        network_component_ids = set(all_species(self.reactions))
         unknown_ids = [
             component_id
             for component_id in component_ids
@@ -191,15 +221,20 @@ class ReactionNetwork(BaseModel):
         ]
         if unknown_ids:
             unknown = ", ".join(unknown_ids)
-            raise ValueError(f"Components are not part of this network: {unknown}")
+            raise ValueError(
+                f"Components are not part of this network: {unknown}")
 
         return component_ids
 
     def stoichiometric_matrix_by_components(
         self,
-        components: list[Component],
+        components: list[Component] | None = None,
     ) -> list[list[float]]:
-        component_ids = self._component_ids_from_components(components)
+        component_ids = (
+            self.component_ids
+            if components is None
+            else self._component_ids_from_components(components)
+        )
         return stoichiometric_matrix(
             reactions=self.reactions,
             component_ids=component_ids,
@@ -207,9 +242,13 @@ class ReactionNetwork(BaseModel):
 
     def stoichiometric_matrix_dict_by_components(
         self,
-        components: list[Component],
+        components: list[Component] | None = None,
     ) -> dict[str, list[float]]:
-        component_ids = self._component_ids_from_components(components)
+        component_ids = (
+            self.component_ids
+            if components is None
+            else self._component_ids_from_components(components)
+        )
         matrix = stoichiometric_matrix(
             reactions=self.reactions,
             component_ids=component_ids,
