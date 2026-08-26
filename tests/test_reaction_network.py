@@ -162,6 +162,100 @@ def test_stoichiometric_matrix_can_be_reordered_by_components():
     }
 
 
+def test_configured_components_define_network_component_order():
+    component_co2 = Component(name="Carbon Dioxide", formula="CO2", state="g")
+    component_h2 = Component(name="Hydrogen", formula="H2", state="g")
+    component_co = Component(name="Carbon Monoxide", formula="CO", state="g")
+    component_ch3oh = Component(name="Methanol", formula="CH3OH", state="g")
+    component_h2o = Component(name="Water", formula="H2O", state="g")
+
+    network = ReactionNetwork(
+        name="methanol-synthesis",
+        reactions=[
+            Reaction(
+                name="R1",
+                reaction="CO2(g) + 3H2(g) <=> CH3OH(g) + H2O(g)",
+                components=[
+                    component_co2,
+                    component_h2,
+                    component_ch3oh,
+                    component_h2o,
+                ],
+            ),
+            Reaction(
+                name="R2",
+                reaction="CO2(g) + H2(g) <=> CO(g) + H2O(g)",
+                components=[
+                    component_co2,
+                    component_h2,
+                    component_co,
+                    component_h2o,
+                ],
+            ),
+            Reaction(
+                name="R3",
+                reaction="CO(g) + 2H2(g) <=> CH3OH(g)",
+                components=[component_co, component_h2, component_ch3oh],
+            ),
+        ],
+        components=[
+            component_h2o,
+            component_ch3oh,
+            component_co,
+            component_h2,
+            component_co2,
+        ],
+    )
+
+    assert network.component_ids == [
+        "H2O-g",
+        "CH3OH-g",
+        "CO-g",
+        "H2-g",
+        "CO2-g",
+    ]
+    assert network.stoichiometric_matrix == [
+        [1.0, 1.0, 0.0],
+        [1.0, 0.0, 1.0],
+        [0.0, 1.0, -1.0],
+        [-3.0, -1.0, -2.0],
+        [-1.0, -1.0, 0.0],
+    ]
+    assert network.stoichiometric_matrix_dict == {
+        "H2O-g": [1.0, 1.0, 0.0],
+        "CH3OH-g": [1.0, 0.0, 1.0],
+        "CO-g": [0.0, 1.0, -1.0],
+        "H2-g": [-3.0, -1.0, -2.0],
+        "CO2-g": [-1.0, -1.0, 0.0],
+    }
+
+
+def test_configured_components_must_not_be_empty():
+    reactions = [Reaction(name="R1", reaction="H2(g) => 2H(g)")]
+
+    with pytest.raises(
+        ValueError,
+        match="ReactionNetwork components must not be empty when provided.",
+    ):
+        ReactionNetwork(name="empty-components", reactions=reactions, components=[])
+
+
+def test_stoichiometric_matrix_by_components_defaults_to_network_order():
+    network = make_network(
+        "sequential",
+        [
+            ("R1", "H2(g) => 2H(g)"),
+            ("R2", "2H(g) + O(g) => H2O(g)"),
+        ],
+    )
+
+    assert network.stoichiometric_matrix_by_components() == network.stoichiometric_matrix
+    assert (
+        network.stoichiometric_matrix_dict_by_components()
+        == network.stoichiometric_matrix_dict
+    )
+
+
 def test_stoichiometric_matrix_reorder_rejects_unknown_components():
     network = make_network("simple", [("R1", "H2(g) => 2H(g)")])
     component_o2 = Component(name="Oxygen", formula="O2", state="g")
