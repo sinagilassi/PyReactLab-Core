@@ -1,44 +1,23 @@
 # 🧬 Models
 
-This section provides an overview of the core data models used in PyReactLab-Core, including classes for representing chemical species, reactions, and reaction networks. Each model is designed to facilitate efficient storage, manipulation, and analysis of chemical data.
+This section provides a high-level overview of the core data models used in PyReactLab-Core. The project centers on two principal model types:
 
-## ⚛️ Chemical Reaction Model
+- [Reaction](reaction.md): a single chemical reaction with parsed stoichiometry, phase metadata, and balance analysis
+- [ReactionNetwork](reaction_network.md): a collection of reactions analyzed together as a stoichiometric network
 
-::: pyreactlab_core.models.reaction
-    handler: python
-    options:
-        show_source: true
-        show_root_heading: true
-        show_root_full_path: true
-        show_signature_annotations: true
-        docstring_style: google
-        merge_init_into_class: true
-        show_if_no_docstring: true
-        show_bases: true
-        show_inheritance_diagram: false
-        show_submodules: true
+## 🔗 Related pages
 
-## Reaction Network Model
+- [Reaction Model](reaction.md)
+- [Reaction Network Model](reaction_network.md)
+- [Documentation Home](docs.md)
 
-`ReactionNetwork` represents and analyzes relationships among multiple
-`Reaction` objects. It stays within structural reaction analysis: species
-collection, stoichiometry, rank, reaction dependency, phases, charge, and
-elemental consistency. Operating conditions, reaction extents, equilibrium,
-kinetics, reactor models, optimization, and simulation belong downstream in
-PyReactLab's `ReactionSystem`.
+## Overview
 
-The stoichiometric matrix convention is explicit:
+`Reaction` represents one equation and exposes its structural analysis immediately after initialization, including reactant/product parsing, stoichiometric coefficients, element and charge balance checks, and component mapping.
 
-- rows = components/species
-- columns = reactions
-- reactant coefficients are negative
-- product coefficients are positive
-- non-participating species are zero
+`ReactionNetwork` builds on this by analyzing multiple `Reaction` objects together. It derives the stoichiometric matrix, detects independent and dependent reactions, groups species by role and phase, and evaluates element and charge balance across the full network.
 
-Component identity uses the parsed molecule-state identifier exposed by
-`Reaction`, such as `CO2-g`, `H2O-l`, `H{+}-aq`, `OH{-}-aq`, and
-`Fe{3+}-aq`. Formula, charge, and phase are therefore preserved in network
-matrices and maps.
+## Model relationships
 
 ```python
 from pyreactlab_core.models import Reaction, ReactionNetwork
@@ -51,35 +30,15 @@ r2 = Reaction(
     name="R2",
     reaction="CO2(g) + H2(g) <=> CO(g) + H2O(g)",
 )
-r3 = Reaction(
-    name="R3",
-    reaction="CO(g) + 2H2(g) <=> CH3OH(g)",
-)
 
 network = ReactionNetwork(
     name="methanol-synthesis",
-    reactions=[r1, r2, r3],
+    reactions=[r1, r2],
 )
 
-print(network.component_ids)
-print(network.stoichiometric_matrix)
+print(r1.is_balanced)
 print(network.stoichiometric_rank)
 print(network.independent_reactions)
-print(network.dependent_reactions)
-print(network.reaction_dependencies)
-print(network.summary)
 ```
 
-::: pyreactlab_core.models.reaction_network
-    handler: python
-    options:
-        show_source: true
-        show_root_heading: true
-        show_root_full_path: true
-        show_signature_annotations: true
-        docstring_style: google
-        merge_init_into_class: true
-        show_if_no_docstring: true
-        show_bases: true
-        show_inheritance_diagram: false
-        show_submodules: true
+The detailed API documentation for each model lives on its dedicated page to avoid repeating the same reference material in the overview page.
