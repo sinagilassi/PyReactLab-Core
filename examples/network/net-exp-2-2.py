@@ -1,11 +1,12 @@
 # import libs
-from pythermodb_settings.models import Component
-from pyreactlab_core.models import Reaction, ReactionNetwork
 import sys
 from pathlib import Path
-from rich import print
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from pythermodb_settings.models import Component
+from pyreactlab_core.models import Reaction, ReactionNetwork
+from rich import print
 
 
 # SECTION: define components
@@ -45,6 +46,14 @@ components = [
     component_co,
     component_ch3oh,
     component_h2o,
+]
+
+reordered_components = [
+    component_h2o,
+    component_ch3oh,
+    component_co,
+    component_h2,
+    component_co2,
 ]
 
 
@@ -109,6 +118,15 @@ print(network.stoichiometric_matrix)
 
 print(" stoichiometric_matrix_dict:")
 print(network.stoichiometric_matrix_dict)
+
+print(" reordered_components:")
+print([f"{item.formula}-{item.state}" for item in reordered_components])
+
+print(" stoichiometric_matrix_by_components:")
+print(network.stoichiometric_matrix_by_components(reordered_components))
+
+print(" stoichiometric_matrix_dict_by_components:")
+print(network.stoichiometric_matrix_dict_by_components(reordered_components))
 
 # SECTION: display dependency analysis
 # NOTE: The result should show R3 = R1 - R2.
