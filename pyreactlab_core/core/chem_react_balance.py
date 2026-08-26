@@ -44,6 +44,89 @@ class ChemReactBalance:
     # NOTE: numerical tolerance for balance validation
     _balance_tolerance: float = 1e-12
 
+    # ! ::: parse ionic charge
+    def parse_ionic_charge(
+        self,
+        molecule: str
+    ) -> int:
+        """
+        Parse ionic charge from a molecular formula.
+
+        Supported charge notation:
+        - Fe{3+}   -> 3
+        - SO4{2-}  -> -2
+        - OH{-}    -> -1
+        - Fe^3+    -> 3
+        - NH4+     -> 1
+        - Cl-      -> -1
+        - H2O      -> 0
+        - e{-}     -> -1
+        """
+        try:
+            # SECTION: validate input
+            if not isinstance(molecule, str):
+                raise ValueError("Molecule must be a string.")
+
+            molecule = molecule.strip()
+
+            if not molecule:
+                raise ValueError("Molecule cannot be empty.")
+
+            # SECTION: electron shorthand
+            if molecule in ("e-", "e{-}", "e{1-}", "e^-", "e^1-"):
+                return -1
+
+            # SECTION: curly-brace charge
+            # Fe{3+}, SO4{2-}, OH{-}
+            match = re.fullmatch(
+                r".+\{(\d*)([+-])\}",
+                molecule
+            )
+
+            if match:
+                magnitude_text = match.group(1)
+                sign = match.group(2)
+                magnitude = (
+                    int(magnitude_text)
+                    if magnitude_text
+                    else 1
+                )
+
+                return magnitude if sign == "+" else -magnitude
+
+            # SECTION: caret charge
+            # Fe^3+, SO4^2-, OH^-
+            match = re.fullmatch(
+                r".+\^(\d*)([+-])",
+                molecule
+            )
+
+            if match:
+                magnitude_text = match.group(1)
+                sign = match.group(2)
+                magnitude = (
+                    int(magnitude_text)
+                    if magnitude_text
+                    else 1
+                )
+
+                return magnitude if sign == "+" else -magnitude
+
+            # SECTION: trailing unit charge
+            # NH4+, Cl-
+            # NOTE: trailing notation is limited to magnitude 1 so NH4+
+            # means ammonium, not charge +4.
+            if molecule.endswith(("+", "-")):
+                return 1 if molecule[-1] == "+" else -1
+
+            return 0
+
+        except Exception as e:
+            raise Exception(
+                f"Error parsing ionic charge "
+                f"for molecule '{molecule}': {e}"
+            )
+
     # ! ::: parse elemental composition
     def parse_elemental_composition(
         self,
@@ -104,11 +187,9 @@ class ChemReactBalance:
             # Fe{3+} -> Fe
             # SO4{2-} -> SO4
             # OH{-} -> OH
-            molecule = re.sub(
-                r"\{(?:\d+)?[+-]\}$",
-                "",
-                molecule
-            )
+            molecule = re.sub(r"\{(?:\d+)?[+-]\}$", "", molecule)
+            molecule = re.sub(r"\^(?:\d+)?[+-]$", "", molecule)
+            molecule = re.sub(r"[+-]$", "", molecule)
 
             # SECTION: hydrate / adduct sections
             # supports:
