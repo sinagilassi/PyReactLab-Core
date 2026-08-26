@@ -60,6 +60,8 @@ class ReactionNetwork(BaseModel):
         Name of the reaction network.
     reactions : list[Reaction]
         List of reactions included in the reaction network.
+    balance_reaction : bool
+        If True, automatically balance each reaction before network analysis.
     components : list[Component] | None
         List of chemical components included in the reaction network, the order of which may affect the stoichiometric matrix.
 
@@ -74,6 +76,10 @@ class ReactionNetwork(BaseModel):
         ...,
         description="Chemical reactions included in the reaction network.",
     )
+    balance_reaction: bool = Field(
+        default=False,
+        description="If True, automatically balance each reaction before network analysis.",
+    )
     components: Optional[list[Component]] = Field(
         default=None,
         description="Chemical components included in the reaction network.",
@@ -84,6 +90,19 @@ class ReactionNetwork(BaseModel):
         if not self.reactions:
             raise ValueError(
                 "ReactionNetwork must contain at least one reaction.")
+
+        if self.balance_reaction:
+            self.reactions = [
+                Reaction(
+                    name=reaction.name,
+                    reaction=reaction.reaction,
+                    balance_reaction=True,
+                    components=reaction.components,
+                    reaction_mode_symbol=reaction.reaction_mode_symbol,
+                    component_keys=reaction.component_keys,
+                )
+                for reaction in self.reactions
+            ]
 
         seen: set[str] = set()
         for reaction in self.reactions:
