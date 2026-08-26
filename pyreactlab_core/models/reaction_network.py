@@ -4,6 +4,8 @@ from typing import Any
 
 import numpy as np
 from pydantic import BaseModel, Field, computed_field, model_validator
+from pythermodb_settings.models import Component
+from pythermodb_settings.utils import set_component_id
 
 from ..core.chem_react_balance import ChemReactBalance
 from ..core.reaction_network_mapping import (
@@ -161,6 +163,60 @@ class ReactionNetwork(BaseModel):
                 self.component_ids,
                 self.stoichiometric_matrix,
             )
+        }
+
+    def _component_ids_from_components(
+        self,
+        components: list[Component],
+    ) -> list[str]:
+        component_ids = [
+            set_component_id(component, "Formula-State")  # type: ignore[arg-type]
+            for component in components
+        ]
+
+        duplicate_ids = [
+            component_id
+            for index, component_id in enumerate(component_ids)
+            if component_id in component_ids[:index]
+        ]
+        if duplicate_ids:
+            duplicates = ", ".join(dict.fromkeys(duplicate_ids))
+            raise ValueError(f"Duplicate component IDs detected: {duplicates}")
+
+        network_component_ids = set(self.component_ids)
+        unknown_ids = [
+            component_id
+            for component_id in component_ids
+            if component_id not in network_component_ids
+        ]
+        if unknown_ids:
+            unknown = ", ".join(unknown_ids)
+            raise ValueError(f"Components are not part of this network: {unknown}")
+
+        return component_ids
+
+    def stoichiometric_matrix_by_components(
+        self,
+        components: list[Component],
+    ) -> list[list[float]]:
+        component_ids = self._component_ids_from_components(components)
+        return stoichiometric_matrix(
+            reactions=self.reactions,
+            component_ids=component_ids,
+        )
+
+    def stoichiometric_matrix_dict_by_components(
+        self,
+        components: list[Component],
+    ) -> dict[str, list[float]]:
+        component_ids = self._component_ids_from_components(components)
+        matrix = stoichiometric_matrix(
+            reactions=self.reactions,
+            component_ids=component_ids,
+        )
+        return {
+            component_id: row
+            for component_id, row in zip(component_ids, matrix)
         }
 
     @computed_field
