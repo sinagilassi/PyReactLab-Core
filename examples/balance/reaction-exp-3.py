@@ -31,16 +31,40 @@ reaction_5 = Reaction(
     reaction="CuSO4*5H2O(s) <=> CuSO4(l) + H2O(l)"
 )
 
+# Radical abstraction example
+reaction_6 = "H2(g) + 5Cl{*}(g) => HCl(g) + H{*}(g)"
+
+# Radical ion formation example
+reaction_7 = "O2(g) + e- => 2O2{*-}(g)"
+
+# Radical ion protonation example
+reaction_8 = "O2{*-}(aq) + H{+}(aq) => HO2{*}(aq)"
+
+# Zwitterion intramolecular proton transfer example
+reaction_9 = "3NH3{+}-CH2-COO{-}(aq) => NH2-CH2-COOH(aq)"
+
+# Zwitterion acid-base example with mixed charge centers
+reaction_10 = (
+    "NH3{+}-CH2-NH3{+}-COO{-}(aq) + OH{-}(aq) "
+    "=> NH2-CH2-NH3{+}-COO{-}(aq) + 2H2O(l)"
+)
+
 tests = [
     reaction_1,
     reaction_2,
     reaction_3,
     reaction_4,
-    reaction_5
+    reaction_5,
+    reaction_6,
+    reaction_7,
+    reaction_8,
+    reaction_9,
+    reaction_10,
 ]
 
 for eq in tests:
-    print("IN :", eq.reaction)
+    reaction = eq.reaction if isinstance(eq, Reaction) else eq
+    print("IN :", reaction)
     print("ALG:", balance(eq, "algebraic"))
     print("HAL:", balance(eq, "half", medium="auto"))
     print("OX :", balance(eq, "oxidation"))
