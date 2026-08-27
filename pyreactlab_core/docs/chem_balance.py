@@ -47,6 +47,7 @@ _CHARGE_CURLY_RE = re.compile(r"^(.*)\{([0-9]*)([+-])\}$")  # Fe{3+}, SO4{2-}
 _CHARGE_CARET_RE = re.compile(r"^(.*)\^([0-9]*)([+-])$")   # SO4^2-
 _CHARGE_TRAIL_RE = re.compile(r"^(.+?)([+-])$")            # NH4+, Cl-
 _LEADING_COEFF_RE = re.compile(r"^\s*(\d+)(?=[A-Z\[\(])")
+_STATE_SUFFIX_RE = re.compile(r"^(.*?)(\((?:g|l|s|aq)\))$")
 
 
 def _normalize_token(tok: str) -> str:
@@ -63,22 +64,48 @@ def _parse_charge(token: str) -> Tuple[str, int]:
     Return (formula_without_charge, charge).
     Supports:
       - Fe{3+}, Cr2O7{2-}
+      - CH3{*}, O2{*-}, C6H6{*2+}
+      - NH3{+}-CH2-COO{-}
       - SO4^2-
       - Fe2+, NH4+
     """
     t = token.strip()
+    state_suffix = ""
+
+    state_match = _STATE_SUFFIX_RE.match(t)
+    if state_match:
+        t = state_match.group(1).strip()
+        state_suffix = state_match.group(2)
+
+    charge_tokens = re.findall(r"\{([^{}\s]+)\}", t)
+    if charge_tokens:
+        charge = sum(
+            _parse_charge_annotation_token(charge_token)
+            for charge_token in charge_tokens
+        )
+        base = re.sub(r"\{[^{}\s]*\}", "", t)
+        return f"{base}{state_suffix}", charge
+
+    caret_tokens = re.findall(r"\^(\*?[0-9]*[+-])", t)
+    if caret_tokens:
+        charge = sum(
+            _parse_charge_annotation_token(charge_token)
+            for charge_token in caret_tokens
+        )
+        base = re.sub(r"\^\*?[0-9]*[+-]", "", t)
+        return f"{base}{state_suffix}", charge
 
     m = _CHARGE_CURLY_RE.match(t)
     if m:
         base, num, sign = m.group(1), m.group(2), m.group(3)
         n = int(num) if num else 1
-        return base, (n if sign == "+" else -n)
+        return f"{base}{state_suffix}", (n if sign == "+" else -n)
 
     m = _CHARGE_CARET_RE.match(t)
     if m:
         base, num, sign = m.group(1), m.group(2), m.group(3)
         n = int(num) if num else 1
-        return base, (n if sign == "+" else -n)
+        return f"{base}{state_suffix}", (n if sign == "+" else -n)
 
     # Trailing charge is limited to +/-1. Use brace or caret notation for
     # larger charges, e.g. Fe{2+} or Fe^2+, to avoid confusing NH4+ with +4.
@@ -87,9 +114,25 @@ def _parse_charge(token: str) -> Tuple[str, int]:
         if m:
             base, sign = m.group(1), m.group(2)
             if base:
-                return base, (1 if sign == "+" else -1)
+                return f"{base}{state_suffix}", (1 if sign == "+" else -1)
 
-    return t, 0
+    return f"{t}{state_suffix}", 0
+
+
+def _parse_charge_annotation_token(token: str) -> int:
+    token = token.strip().replace("âˆ’", "-").replace("*", "")
+
+    if not token:
+        return 0
+
+    match = re.fullmatch(r"([0-9]*)([+-])", token)
+    if not match:
+        raise ValueError(f"Invalid charge annotation token: {token}")
+
+    magnitude_text, sign = match.groups()
+    magnitude = int(magnitude_text) if magnitude_text else 1
+
+    return magnitude if sign == "+" else -magnitude
 
 
 def _smart_split_plus(side: str) -> List[str]:
