@@ -96,3 +96,33 @@ def test_half_reaction_prefers_complete_original_equation_when_possible():
         "MnO4{-} + Fe{2+} + H{+} -> Mn{2+} + Fe{3+} + H2O",
         "half",
     ) == "MnO4{-} + 5 Fe{2+} + 8 H{+} -> Mn{2+} + 5 Fe{3+} + 4 H2O"
+
+
+def test_balance_parser_supports_radicals_and_zwitterions():
+    radical_anion = parse_species("O2{*-}(g)")
+    assert radical_anion.formula == "O2(g)"
+    assert radical_anion.charge == -1
+    assert radical_anion.atoms == {"O": 2}
+
+    zwitterion = parse_species("NH3{+}-CH2-COO{-}(aq)")
+    assert zwitterion.formula == "NH3-CH2-COO(aq)"
+    assert zwitterion.charge == 0
+    assert zwitterion.atoms == {
+        "N": 1,
+        "H": 5,
+        "C": 2,
+        "O": 2,
+    }
+
+    assert balance("H2(g) + Cl{*}(g) => HCl(g) + H{*}(g)") == (
+        "H2(g) + Cl{*}(g) => HCl(g) + H{*}(g)"
+    )
+    assert balance("O2(g) + e- => O2{*-}(g)") == (
+        "O2(g) + e- => O2{*-}(g)"
+    )
+    assert balance("O2{*-}(aq) + H{+}(aq) => HO2{*}(aq)") == (
+        "O2{*-}(aq) + H{+}(aq) => HO2{*}(aq)"
+    )
+    assert balance("NH3{+}-CH2-COO{-}(aq) => NH2-CH2-COOH(aq)") == (
+        "NH3{+}-CH2-COO{-}(aq) => NH2-CH2-COOH(aq)"
+    )
