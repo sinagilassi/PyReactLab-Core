@@ -12,6 +12,12 @@ def test_parse_ionic_charge_from_formula_notation():
     assert parser.parse_ionic_charge("Cl-") == -1
     assert parser.parse_ionic_charge("H2O") == 0
     assert parser.parse_ionic_charge("e{-}") == -1
+    assert parser.parse_ionic_charge("CH3{*}") == 0
+    assert parser.parse_ionic_charge("CH3{*+}") == 1
+    assert parser.parse_ionic_charge("O2{*-}") == -1
+    assert parser.parse_ionic_charge("C6H6{*2+}") == 2
+    assert parser.parse_ionic_charge("NH3{+}-CH2-COO{-}") == 0
+    assert parser.parse_ionic_charge("NH3{+}-CH2-NH3{+}-COO{-}") == 1
 
 
 def test_parse_elemental_composition_ignores_supported_charge_notation():
@@ -27,3 +33,22 @@ def test_parse_elemental_composition_ignores_supported_charge_notation():
         "H": 4,
     }
     assert parser.parse_elemental_composition("e{-}") == {}
+    assert parser.parse_elemental_composition("CH3{*}") == {
+        "C": 1,
+        "H": 3,
+    }
+    assert parser.parse_elemental_composition("O2{*-}") == {
+        "O": 2,
+    }
+    assert parser.parse_elemental_composition("NH3{+}-CH2-COO{-}") == {
+        "N": 1,
+        "H": 5,
+        "C": 2,
+        "O": 2,
+    }
+    assert parser.parse_elemental_composition("NH3{+}-CH2-NH3{+}-COO{-}") == {
+        "N": 2,
+        "H": 8,
+        "C": 2,
+        "O": 2,
+    }
