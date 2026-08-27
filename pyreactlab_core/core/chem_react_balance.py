@@ -36,6 +36,9 @@ class ChemReactBalance:
     SO4{2-}
     OH{-}
     e{-}
+    CH3{*}
+    O2{*-}
+    NH3{+}-CH2-COO{-}
     """
 
     # NOTE: use a set for fast membership checks
@@ -56,6 +59,10 @@ class ChemReactBalance:
         - Fe{3+}   -> 3
         - SO4{2-}  -> -2
         - OH{-}    -> -1
+        - CH3{*}   -> 0
+        - CH3{*+}  -> 1
+        - O2{*-}   -> -1
+        - NH3{+}-CH2-COO{-} -> 0
         - Fe^3+    -> 3
         - NH4+     -> 1
         - Cl-      -> -1
@@ -76,41 +83,23 @@ class ChemReactBalance:
             if molecule in ("e-", "e{-}", "e{1-}", "e^-", "e^1-"):
                 return -1
 
-            # SECTION: curly-brace charge
-            # Fe{3+}, SO4{2-}, OH{-}
-            match = re.fullmatch(
-                r".+\{(\d*)([+-])\}",
-                molecule
-            )
-
-            if match:
-                magnitude_text = match.group(1)
-                sign = match.group(2)
-                magnitude = (
-                    int(magnitude_text)
-                    if magnitude_text
-                    else 1
+            # SECTION: annotated charge centers
+            # Fe{3+}, CH3{*}, O2{*-}, NH3{+}-CH2-COO{-}
+            charge_tokens = re.findall(r"\{([^{}\s]+)\}", molecule)
+            if charge_tokens:
+                return sum(
+                    self._parse_charge_annotation_token(token)
+                    for token in charge_tokens
                 )
-
-                return magnitude if sign == "+" else -magnitude
 
             # SECTION: caret charge
-            # Fe^3+, SO4^2-, OH^-
-            match = re.fullmatch(
-                r".+\^(\d*)([+-])",
-                molecule
-            )
-
-            if match:
-                magnitude_text = match.group(1)
-                sign = match.group(2)
-                magnitude = (
-                    int(magnitude_text)
-                    if magnitude_text
-                    else 1
+            # Fe^3+, SO4^2-, OH^-, CH3^*+
+            caret_tokens = re.findall(r"\^(\*?\d*[+-])", molecule)
+            if caret_tokens:
+                return sum(
+                    self._parse_charge_annotation_token(token)
+                    for token in caret_tokens
                 )
-
-                return magnitude if sign == "+" else -magnitude
 
             # SECTION: trailing unit charge
             # NH4+, Cl-
@@ -126,6 +115,31 @@ class ChemReactBalance:
                 f"Error parsing ionic charge "
                 f"for molecule '{molecule}': {e}"
             )
+
+    # ! ::: parse charge annotation token
+    def _parse_charge_annotation_token(
+        self,
+        token: str
+    ) -> int:
+        """
+        Parse one annotation token from brace or caret notation.
+        """
+        token = token.strip().replace("*", "")
+
+        if not token:
+            return 0
+
+        match = re.fullmatch(r"(\d*)([+-])", token)
+        if not match:
+            raise ValueError(
+                f"Invalid charge annotation token '{token}'."
+            )
+
+        magnitude_text = match.group(1)
+        sign = match.group(2)
+        magnitude = int(magnitude_text) if magnitude_text else 1
+
+        return magnitude if sign == "+" else -magnitude
 
     # ! ::: parse elemental composition
     def parse_elemental_composition(
@@ -165,6 +179,12 @@ class ChemReactBalance:
         SO4{2-}
             -> {"S": 1, "O": 4}
 
+        CH3{*}
+            -> {"C": 1, "H": 3}
+
+        NH3{+}-CH2-COO{-}
+            -> {"N": 1, "H": 5, "C": 2, "O": 2}
+
         e{-}
             -> {}
         """
@@ -180,22 +200,39 @@ class ChemReactBalance:
 
             # SECTION: electron
             # NOTE: electron contains no atomic elements
-            if molecule == "e" or molecule.startswith("e{"):
+            if molecule == "e" or molecule.startswith("e{") or molecule in (
+                "e-",
+                "e^-",
+                "e^1-",
+            ):
                 return {}
 
-            # SECTION: remove ionic charge
+            # SECTION: remove charge/radical annotations
             # Fe{3+} -> Fe
             # SO4{2-} -> SO4
             # OH{-} -> OH
-            molecule = re.sub(r"\{(?:\d+)?[+-]\}$", "", molecule)
-            molecule = re.sub(r"\^(?:\d+)?[+-]$", "", molecule)
-            molecule = re.sub(r"[+-]$", "", molecule)
+            # CH3{*} -> CH3
+            # O2{*-} -> O2
+            # NH3{+}-CH2-COO{-} -> NH3-CH2-COO
+            molecule = re.sub(r"\{[^{}\s]*\}", "", molecule)
+            molecule = re.sub(r"\^\*?(?:\d+)?[+-]", "", molecule)
+
+            # SECTION: remove trailing unit charge
+            # NH4+ -> NH4, Cl- -> Cl
+            if molecule.endswith(("+", "-")):
+                molecule = molecule[:-1]
 
             # SECTION: hydrate / adduct sections
             # supports:
             # CuSO4*5H2O
             # CuSO4·5H2O
             sections = re.split(r"[*·]", molecule)
+
+            sections = [
+                fragment
+                for section in sections
+                for fragment in section.split("-")
+            ]
 
             total_composition: Dict[str, int] = {}
 
